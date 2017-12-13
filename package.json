@@ -1,0 +1,51 @@
+{
+  "name": "cancer",
+  "version": "1.0.0",
+  "description": "Easy Mutation Testing",
+  "main": "src/cancer.js",
+  "bin": {
+    "cancer": "./bin/cancer"
+  },
+  "scripts": {
+    "pretest": "standard src",
+    "test": "nyc ava"
+  },
+  "keywords": [
+    "mutation",
+    "testing",
+    "mutant",
+    "mutants",
+    "test",
+    "tests",
+    "framework"
+  ],
+  "author": "Diego Rodríguez Baquero <diegorbaquero@gmail.com> (https://diegorbaquero.com)",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.0",
+    "chalk": "^2.3.0",
+    "debug": "^3.1.0",
+    "del": "^3.0.0",
+    "diff": "^3.4.0",
+    "escodegen": "^1.8.1",
+    "esprima": "^4.0.0",
+    "esquery": "^1.0.0",
+    "globby": "^6.1.0",
+    "mkdirp": "^0.5.1",
+    "recursive-copy": "^2.0.7",
+    "strip-ansi-stream": "^1.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.23.0",
+    "nyc": "^11.2.1",
+    "standard": "^10.0.3"
+  },
+  "ava": {
+    "failFast": false
+  },
+  "nyc": {
+    "include": [
+      "src"
+    ]
+  }
+}

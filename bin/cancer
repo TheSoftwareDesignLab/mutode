@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+
+const Cancer = require('../src/cancer')
+
+const paths = process.argv.slice(2)
+
+const mutator = new Cancer(paths)
+
+mutator.run()
