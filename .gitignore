@@ -28,3 +28,4 @@ typings/
 .yarn-integrity
 .env
 example-module/.cancer
+package-lock.json
