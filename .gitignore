@@ -28,4 +28,3 @@ typings/
 .yarn-integrity
 .env
 example-module/.mutode
-package-lock.json
