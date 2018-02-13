@@ -6,7 +6,7 @@ const chalk = require('chalk')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({cancerInstance, filePath, lines}) {
+module.exports = async function ({mutodeInstance, filePath, lines}) {
   console.log('Running Math Mutator')
   return new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
@@ -45,18 +45,18 @@ module.exports = async function ({cancerInstance, filePath, lines}) {
         }
       })
       for (const mutant of mutants) {
-        cancerInstance.mutants++
+        mutodeInstance.mutants++
         const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
           if (stringDiff.added) return chalk.green(stringDiff.value)
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        console.logSame(`MUTANT ${cancerInstance.mutants}:\tLine ${n}: ${diff}...\t`)
-        cancerInstance.mutantLog(`MUTANT ${cancerInstance.mutants}:\tLine ${n}: '${line.trim()}' > '${mutant.trim()}'...\t`)
+        console.logSame(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: '${line.trim()}' > '${mutant.trim()}'...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        await genericMutator({cancerInstance, filePath, contentToWrite})
+        await genericMutator({mutodeInstance, filePath, contentToWrite})
       }
     }, err => {
       if (err) return reject(err)

@@ -1,10 +1,10 @@
 const fs = require('fs')
 const spawn = require('child_process').spawn
 
-module.exports = async function mutantRunner ({cancerInstance, filePath, contentToWrite}) {
+module.exports = async function mutantRunner ({mutodeInstance, filePath, contentToWrite}) {
   return new Promise((resolve, reject) => {
-    fs.writeFileSync(`../cancer-tmp/${filePath}`, contentToWrite)
-    const child = spawn('npm', ['test'], {cwd: cancerInstance.tmpPath})
+    fs.writeFileSync(`../mutode-tmp/${filePath}`, contentToWrite)
+    const child = spawn('npm', ['test'], {cwd: mutodeInstance.tmpPath})
     // child.stdout.on('data', d => {
     // console.log(d.toString())
     // })
@@ -20,18 +20,18 @@ module.exports = async function mutantRunner ({cancerInstance, filePath, content
     const timeout = setTimeout(() => {
       console.log('discarded (timeout)')
       child.kill('SIGKILL')
-    }, cancerInstance.timeout).unref()
+    }, mutodeInstance.timeout).unref()
 
     child.on('exit', (code, signal) => {
       clearTimeout(timeout)
       if (code === 0) {
         console.log('survived')
-        cancerInstance.survivors++
+        mutodeInstance.survivors++
       } else if (signal) {
-        cancerInstance.discarded++
+        mutodeInstance.discarded++
       } else {
         console.log('killed')
-        cancerInstance.killed++
+        mutodeInstance.killed++
       }
       // console.log('exit', code)
       resolve()

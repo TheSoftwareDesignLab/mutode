@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const Cancer = require('../src/cancer')
+const Mutode = require('../src/mutode')
 
 const paths = process.argv.slice(2)
 
-const mutator = new Cancer(paths)
+const mutator = new Mutode(paths)
 
 mutator.run()

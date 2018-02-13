@@ -1,10 +1,10 @@
 const test = require('ava')
 
-const Cancer = require('../src/cancer')
+const Mutode = require('../src/mutode')
 
 process.chdir('./example-module')
 
-const mutator = new Cancer('index.js')
+const mutator = new Mutode('index.js')
 
 test(async t => {
   t.is(mutator.coverage, 0)

@@ -1,6 +1,6 @@
 const async = require('async')
 const spawn = require('child_process').spawn
-const debug = require('debug')('cancer')
+const debug = require('debug')('mutode')
 const mkdirp = require('mkdirp')
 const del = require('del')
 const stripAnsiStream = require('strip-ansi-stream')
@@ -13,11 +13,11 @@ const {promisify} = require('util')
 const readFile = promisify(fs.readFile)
 console.logSame = (t) => process.stdout.write(t)
 
-class Cancer {
+class Mutode {
   constructor (paths = ['src/*']) {
-    Cancer.mkdir()
+    Mutode.mkdir()
     this.paths = paths
-    this.tmpPath = path.resolve('../cancer-tmp')
+    this.tmpPath = path.resolve('../mutode-tmp')
     this.mutants = 0
     this.killed = 0
     this.survivors = 0
@@ -27,9 +27,9 @@ class Cancer {
 
     this.loadMutants()
 
-    const mutantsLogFile = fs.createWriteStream(path.resolve('./.cancer/mutants.log'), { flags: 'w' })
+    const mutantsLogFile = fs.createWriteStream(path.resolve('./.mutode/mutants.log'), { flags: 'w' })
     this.mutantLog = string => mutantsLogFile.write(string + '\n')
-    const logFile = fs.createWriteStream(path.resolve('./.cancer/cancer.log'), { flags: 'w' })
+    const logFile = fs.createWriteStream(path.resolve('./.mutode/mutode.log'), { flags: 'w' })
     const stream = stripAnsiStream()
 
     stream.pipe(logFile)
@@ -43,8 +43,8 @@ class Cancer {
   }
 
   async run () {
-    await Cancer.delete()
-    await Cancer.copy()
+    await Mutode.delete()
+    await Mutode.copy()
     await this.runCleanTests()
     const filePaths = await globby(this.paths)
     return new Promise((resolve, reject) => {
@@ -54,7 +54,7 @@ class Cancer {
         const lines = fileContent.split('\n')
         // console.log(`There are ${lines.length} lines`)
         for (const mutator of this.mutators) {
-          await mutator({cancerInstance: this, filePath, lines})
+          await mutator({mutodeInstance: this, filePath, lines})
         }
         console.log('')
       }, async (err) => {
@@ -62,7 +62,7 @@ class Cancer {
           console.error(err)
           reject(err)
         }
-        await Cancer.delete()
+        await Mutode.delete()
         console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survivors} survived and ${this.discarded} were discarded`)
         this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
         console.log(`Mutant coverage: ${this.coverage}%`)
@@ -83,7 +83,7 @@ class Cancer {
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
-        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Cancer to run'))
+        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to run'))
         const diff = +new Date() - start
         this.expectedTime = diff
         this.timeout = Math.max(diff * 2, 2)
@@ -107,21 +107,21 @@ class Cancer {
   }
 
   static mkdir () {
-    mkdirp.sync(path.resolve('./.cancer'))
+    mkdirp.sync(path.resolve('./.mutode'))
   }
 
   static async copy () {
     console.logSame('Creating a copy of your module... ')
-    await copyDir('./', '../cancer-tmp')
+    await copyDir('./', '../mutode-tmp')
     console.log('Done\n')
   }
 
   static async delete () {
-    if (!fs.existsSync('../cancer-tmp')) return
+    if (!fs.existsSync('../mutode-tmp')) return
     console.logSame('Deleting folder... ')
-    await del('../cancer-tmp', {force: true})
+    await del('../mutode-tmp', {force: true})
     console.log('Done\n')
   }
 }
 
-module.exports = Cancer
+module.exports = Mutode

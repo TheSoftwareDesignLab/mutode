@@ -27,5 +27,5 @@ typings/
 *.tgz
 .yarn-integrity
 .env
-example-module/.cancer
+example-module/.mutode
 package-lock.json
