@@ -30,7 +30,20 @@ class Mutode {
     this.discarded = 0
     this.coverage = 0
     this.mutators = []
-    this.concurrency = 2 // os.cpus().length
+    this.concurrency = os.cpus().length
+    this.workers = {}
+    for (let i = 0; i < this.concurrency; i++) {
+      this.workers[i] = true
+    }
+    this.freeQueue = async () => {
+      for (let i = 0; i < this.concurrency; i++) {
+        if (this.workers[i]) {
+          this.workers[i] = false
+          return i
+        }
+      }
+    }
+    this.ready = false
 
     this.loadMutants()
 
@@ -52,31 +65,24 @@ class Mutode {
   async run () {
     try {
       await this.delete()
-      await this.copy()
+      await this.copyFirst()
       await this.runCleanTests()
+      const copied = this.copy()
       await new Promise((resolve, reject) => {
         async.eachSeries(this.filePaths, async (filePath, ind) => {
           debug('Creating mutants for %s', filePath)
-          const queues = []
-          for (let i = 0; i < this.concurrency; i++) {
-            queues[i] = async.queue(async task => {
-              console.log('Running in', i)
-              await task(i)
-              console.log('freed ', i)
-            }, 1)
+
+          const queue = async.queue(async task => {
+            const i = await this.freeQueue()
+            await task(i)
+            this.workers[i] = true
+          }, this.concurrency)
+
+          if (!this.ready) {
+            queue.pause()
+            copied.then(() => queue.resume())
           }
-          const queue = (task) => {
-            let bestQueue = 0
-            let bestQueueLength = queues[0].length()
-            for (let i = 0; i < this.concurrency; i++) {
-              if (queues[i].length() < bestQueueLength) {
-                bestQueue = i
-                bestQueueLength = queues[i].length()
-              }
-            }
-            console.log('pushed to ', bestQueue)
-            queues[bestQueue].push(task)
-          }
+
           const fileContent = (await readFile(filePath)).toString()
           const lines = fileContent.split('\n')
           // console.log(`There are ${lines.length} lines`)
@@ -84,23 +90,13 @@ class Mutode {
             await mutator({mutodeInstance: this, filePath, lines, queue})
           }
           await new Promise(resolve => {
-            const doneCB = () => {
-              console.log(`Finished %s`, filePath)
+            queue.drain = () => {
+              debug(`Finished %s`, filePath)
               for (let i = 0; i < this.concurrency; i++) {
                 fs.writeFileSync(`../mutode-${i}/${filePath}`, fileContent) // Reset file to original content
               }
               console.log('')
               resolve()
-            }
-
-            let done = 0
-            for (let i = 0; i < this.concurrency; i++) {
-              queues[i].drain = () => {
-                done++
-                if (done === this.concurrency) {
-                  doneCB()
-                }
-              }
             }
           })
         }, async err => {
@@ -135,8 +131,7 @@ class Mutode {
       child.on('exit', code => {
         if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-        this.expectedTime = diff
-        this.timeout = Math.max(diff * 2, 2)
+        this.timeout = Math.max(diff * 2, 5)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         resolve()
       })
@@ -156,12 +151,19 @@ class Mutode {
     console.log('Done\n')
   }
 
+  async copyFirst () {
+    console.logSame(`Creating a copy of your module... `)
+    await copyDir('./', `../mutode-0`)
+    console.log('Done\n')
+  }
+
   async copy () {
-    console.logSame(`Creating ${this.concurrency} ${this.concurrency > 1 ? 'copies' : 'copy'} of your module... `)
-    for (let i = 0; i < this.concurrency; i++) {
-      console.logSame(`${i + 1}.. `)
+    console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
+    for (let i = 1; i < this.concurrency; i++) {
+      console.logSame(`${i}.. `)
       await copyDir('./', `../mutode-${i}`)
     }
+    this.ready = true
     console.log('Done\n')
   }
 

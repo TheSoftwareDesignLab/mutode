@@ -1,4 +1,5 @@
 const async = require('async')
+const debug = require('debug')('mathMutator')
 const jsDiff = require('diff')
 const esprima = require('esprima')
 const esquery = require('esquery')
@@ -7,7 +8,7 @@ const chalk = require('chalk')
 const genericMutator = require('../mutantRunner')
 
 module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
-  console.log('Running Math Mutator')
+  debug('Running math mutator on %s', filePath)
   await new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
@@ -56,7 +57,7 @@ module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        queue(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
       }
     }, err => {
       if (err) return reject(err)
