@@ -2,9 +2,9 @@ const async = require('async')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({mutodeInstance, filePath, lines, index}) {
+module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
   console.log('Running Deletion Mutator')
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       if (line.length === 0 || /^\s*$/.test(line)) {
@@ -16,11 +16,10 @@ module.exports = async function ({mutodeInstance, filePath, lines, index}) {
         return
       }
       mutodeInstance.mutants++
-      const logString = `MUTANT ${mutodeInstance.mutants}:\tDeleted line ${n + 1}...\t`
-      console.logSame(logString)
-      mutodeInstance.mutantLog(logString)
+      const log = `MUTANT ${mutodeInstance.mutants}:\tDeleted line ${n + 1}...\t`
+      mutodeInstance.mutantLog(log)
       const contentToWrite = lines.slice(0, n).concat(lines.slice(n + 1, lines.length)).join('\n')
-      await genericMutator({mutodeInstance, filePath, contentToWrite, index})
+      queue(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
     }, resolve)
   })
 }

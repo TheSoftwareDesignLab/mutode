@@ -21,6 +21,8 @@ class Mutode {
     if (this.filePaths.length === 0) {
       throw new Error('No files found in the specified paths')
     }
+    debug('File paths %o', this.filePaths)
+
     this.tmpPath = path.resolve('../mutode-0')
     this.mutants = 0
     this.killed = 0
@@ -28,7 +30,7 @@ class Mutode {
     this.discarded = 0
     this.coverage = 0
     this.mutators = []
-    this.concurrency = os.cpus().length
+    this.concurrency = 2 // os.cpus().length
 
     this.loadMutants()
 
@@ -52,22 +54,55 @@ class Mutode {
       await this.delete()
       await this.copy()
       await this.runCleanTests()
-      debug(this.filePaths)
       await new Promise((resolve, reject) => {
         async.eachSeries(this.filePaths, async (filePath, ind) => {
-          debug(filePath)
+          debug('Creating mutants for %s', filePath)
+          const queues = []
+          for (let i = 0; i < this.concurrency; i++) {
+            queues[i] = async.queue(async task => {
+              console.log('Running in', i)
+              await task(i)
+              console.log('freed ', i)
+            }, 1)
+          }
+          const queue = (task) => {
+            let bestQueue = 0
+            let bestQueueLength = queues[0].length()
+            for (let i = 0; i < this.concurrency; i++) {
+              if (queues[i].length() < bestQueueLength) {
+                bestQueue = i
+                bestQueueLength = queues[i].length()
+              }
+            }
+            console.log('pushed to ', bestQueue)
+            queues[bestQueue].push(task)
+          }
           const fileContent = (await readFile(filePath)).toString()
           const lines = fileContent.split('\n')
           // console.log(`There are ${lines.length} lines`)
-          await new Promise((resolve2, reject2) => {
-            async.eachOfLimit(this.mutators, this.concurrency, async (mutator, ind) => {
-              await mutator({mutodeInstance: this, filePath, lines, index: ind % this.concurrency})
-            }, err => {
-              if (err) reject2(err)
-              else resolve2()
-            })
+          for (const mutator of this.mutators) {
+            await mutator({mutodeInstance: this, filePath, lines, queue})
+          }
+          await new Promise(resolve => {
+            const doneCB = () => {
+              console.log(`Finished %s`, filePath)
+              for (let i = 0; i < this.concurrency; i++) {
+                fs.writeFileSync(`../mutode-${i}/${filePath}`, fileContent) // Reset file to original content
+              }
+              console.log('')
+              resolve()
+            }
+
+            let done = 0
+            for (let i = 0; i < this.concurrency; i++) {
+              queues[i].drain = () => {
+                done++
+                if (done === this.concurrency) {
+                  doneCB()
+                }
+              }
+            }
           })
-          console.log('')
         }, async err => {
           if (err) {
             console.error(err)
@@ -109,7 +144,7 @@ class Mutode {
   }
 
   loadMutants () {
-    console.logSame('Loading mutants...')
+    console.logSame('Loading mutants... ')
     const mutatorsPath = path.resolve(__dirname, 'mutators/')
     fs.readdirSync(mutatorsPath).forEach(file => {
       const filePath = path.join(mutatorsPath, file)
@@ -124,6 +159,7 @@ class Mutode {
   async copy () {
     console.logSame(`Creating ${this.concurrency} ${this.concurrency > 1 ? 'copies' : 'copy'} of your module... `)
     for (let i = 0; i < this.concurrency; i++) {
+      console.logSame(`${i + 1}.. `)
       await copyDir('./', `../mutode-${i}`)
     }
     console.log('Done\n')

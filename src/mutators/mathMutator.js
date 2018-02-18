@@ -6,9 +6,9 @@ const chalk = require('chalk')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({mutodeInstance, filePath, lines, index}) {
+module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
   console.log('Running Math Mutator')
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       try {
@@ -51,12 +51,12 @@ module.exports = async function ({mutodeInstance, filePath, lines, index}) {
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        console.logSame(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`)
+        const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
         mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: '${line.trim()}' > '${mutant.trim()}'...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        await genericMutator({mutodeInstance, filePath, contentToWrite, index})
+        queue(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
       }
     }, err => {
       if (err) return reject(err)
