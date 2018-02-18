@@ -52,10 +52,10 @@ class Mutode {
       await this.delete()
       await this.copy()
       await this.runCleanTests()
-      console.log(this.filePaths)
+      debug(this.filePaths)
       await new Promise((resolve, reject) => {
         async.eachSeries(this.filePaths, async (filePath, ind) => {
-          console.log(filePath)
+          debug(filePath)
           const fileContent = (await readFile(filePath)).toString()
           const lines = fileContent.split('\n')
           // console.log(`There are ${lines.length} lines`)
