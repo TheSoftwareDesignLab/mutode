@@ -1,9 +1,9 @@
 const fs = require('fs')
 const spawn = require('child_process').spawn
 
-module.exports = async function mutantRunner ({mutodeInstance, filePath, contentToWrite}) {
+module.exports = async function mutantRunner ({mutodeInstance, filePath, contentToWrite, index}) {
   return new Promise((resolve, reject) => {
-    fs.writeFileSync(`../mutode-tmp/${filePath}`, contentToWrite)
+    fs.writeFileSync(`../mutode-${index}/${filePath}`, contentToWrite)
     const child = spawn('npm', ['test'], {cwd: mutodeInstance.tmpPath})
     // child.stdout.on('data', d => {
     // console.log(d.toString())

@@ -6,7 +6,7 @@ const chalk = require('chalk')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({mutodeInstance, filePath, lines}) {
+module.exports = async function ({mutodeInstance, filePath, lines, index}) {
   console.log('Running Math Mutator')
   return new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
@@ -35,7 +35,7 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
         ['**', '*']
       ]
       const mutants = []
-      operators.forEach(pair => {
+      for (const pair of operators) {
         const regex = pair[0].length === 1 ? `[^\\${pair[0]}]\\${pair[0]}[^\\${pair[0]}]` : `\\${pair[0].charAt(0)}{${pair[0].length}}`
         const reg = new RegExp(regex, 'g')
         let matches = null
@@ -43,7 +43,7 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
           // console.log(`match at line ${n}`)
           mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
         }
-      })
+      }
       for (const mutant of mutants) {
         mutodeInstance.mutants++
         const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
@@ -56,7 +56,7 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        await genericMutator({mutodeInstance, filePath, contentToWrite})
+        await genericMutator({mutodeInstance, filePath, contentToWrite, index})
       }
     }, err => {
       if (err) return reject(err)
