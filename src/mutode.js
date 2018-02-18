@@ -15,7 +15,7 @@ const readFile = promisify(fs.readFile)
 console.logSame = (t) => process.stdout.write(t)
 
 class Mutode {
-  constructor (paths = ['src/*']) {
+  constructor ({paths = ['src/*'], concurrency = os.cpus().length}) {
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
     if (this.filePaths.length === 0) {
@@ -30,7 +30,7 @@ class Mutode {
     this.discarded = 0
     this.coverage = 0
     this.mutators = []
-    this.concurrency = os.cpus().length
+    this.concurrency = concurrency
     this.workers = {}
     for (let i = 0; i < this.concurrency; i++) {
       this.workers[i] = true
