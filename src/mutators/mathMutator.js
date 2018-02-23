@@ -1,4 +1,5 @@
 const async = require('async')
+const debug = require('debug')('mathMutator')
 const jsDiff = require('diff')
 const esprima = require('esprima')
 const esquery = require('esquery')
@@ -6,9 +7,9 @@ const chalk = require('chalk')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({mutodeInstance, filePath, lines}) {
-  console.log('Running Math Mutator')
-  return new Promise((resolve, reject) => {
+module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
+  debug('Running math mutator on %s', filePath)
+  await new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       try {
@@ -35,7 +36,7 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
         ['**', '*']
       ]
       const mutants = []
-      operators.forEach(pair => {
+      for (const pair of operators) {
         const regex = pair[0].length === 1 ? `[^\\${pair[0]}]\\${pair[0]}[^\\${pair[0]}]` : `\\${pair[0].charAt(0)}{${pair[0].length}}`
         const reg = new RegExp(regex, 'g')
         let matches = null
@@ -43,7 +44,7 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
           // console.log(`match at line ${n}`)
           mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
         }
-      })
+      }
       for (const mutant of mutants) {
         mutodeInstance.mutants++
         const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
@@ -51,12 +52,12 @@ module.exports = async function ({mutodeInstance, filePath, lines}) {
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        console.logSame(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`)
+        const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
         mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: '${line.trim()}' > '${mutant.trim()}'...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        await genericMutator({mutodeInstance, filePath, contentToWrite})
+        queue.push(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
       }
     }, err => {
       if (err) return reject(err)

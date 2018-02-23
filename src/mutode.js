@@ -1,29 +1,49 @@
 const async = require('async')
 const spawn = require('child_process').spawn
 const debug = require('debug')('mutode')
-const mkdirp = require('mkdirp')
 const del = require('del')
-const stripAnsiStream = require('strip-ansi-stream')
 const fs = require('fs')
 const globby = require('globby')
+const mkdirp = require('mkdirp')
+const os = require('os')
 const path = require('path')
 const copyDir = require('recursive-copy')
+const stripAnsiStream = require('strip-ansi-stream')
 const {promisify} = require('util')
 
 const readFile = promisify(fs.readFile)
 console.logSame = (t) => process.stdout.write(t)
 
 class Mutode {
-  constructor (paths = ['src/*']) {
+  constructor ({paths = ['src/*'], concurrency = os.cpus().length}) {
     Mutode.mkdir()
-    this.paths = paths
-    this.tmpPath = path.resolve('../mutode-tmp')
+    this.filePaths = globby.sync(paths)
+    if (this.filePaths.length === 0) {
+      throw new Error('No files found in the specified paths')
+    }
+    debug('File paths %o', this.filePaths)
+
+    this.tmpPath = path.resolve('../mutode-0')
     this.mutants = 0
     this.killed = 0
     this.survivors = 0
     this.discarded = 0
     this.coverage = 0
     this.mutators = []
+    this.concurrency = concurrency
+    this.workers = {}
+    for (let i = 0; i < this.concurrency; i++) {
+      this.workers[i] = true
+    }
+    this.freeQueue = async () => {
+      for (let i = 0; i < this.concurrency; i++) {
+        if (this.workers[i]) {
+          this.workers[i] = false
+          return i
+        }
+      }
+    }
+    this.ready = false
 
     this.loadMutants()
 
@@ -43,33 +63,59 @@ class Mutode {
   }
 
   async run () {
-    await Mutode.delete()
-    await Mutode.copy()
-    await this.runCleanTests()
-    const filePaths = await globby(this.paths)
-    return new Promise((resolve, reject) => {
-      async.eachSeries(filePaths, async filePath => {
-        console.log(filePath)
-        const fileContent = (await readFile(filePath)).toString()
-        const lines = fileContent.split('\n')
-        // console.log(`There are ${lines.length} lines`)
-        for (const mutator of this.mutators) {
-          await mutator({mutodeInstance: this, filePath, lines})
-        }
-        console.log('')
-      }, async (err) => {
-        if (err) {
-          console.error(err)
-          reject(err)
-        }
-        await Mutode.delete()
-        console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survivors} survived and ${this.discarded} were discarded`)
-        this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
-        console.log(`Mutant coverage: ${this.coverage}%`)
-        // process.exit()
-        resolve()
+    try {
+      await this.delete()
+      await this.copyFirst()
+      await this.runCleanTests()
+      const copied = this.copy()
+      await new Promise((resolve, reject) => {
+        async.eachSeries(this.filePaths, async (filePath, ind) => {
+          debug('Creating mutants for %s', filePath)
+
+          const queue = async.queue(async task => {
+            const i = await this.freeQueue()
+            await task(i)
+            this.workers[i] = true
+          }, this.concurrency)
+
+          if (!this.ready) {
+            queue.pause()
+            copied.then(() => queue.resume())
+          }
+
+          const fileContent = (await readFile(filePath)).toString()
+          const lines = fileContent.split('\n')
+          // console.log(`There are ${lines.length} lines`)
+          for (const mutator of this.mutators) {
+            await mutator({mutodeInstance: this, filePath, lines, queue})
+          }
+          await new Promise(resolve => {
+            queue.drain = () => {
+              debug(`Finished %s`, filePath)
+              for (let i = 0; i < this.concurrency; i++) {
+                fs.writeFileSync(`../mutode-${i}/${filePath}`, fileContent) // Reset file to original content
+              }
+              console.log('')
+              resolve()
+            }
+          })
+        }, async err => {
+          if (err) {
+            console.error(err)
+            reject(err)
+          }
+          console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survivors} survived and ${this.discarded} were discarded`)
+          this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
+          console.log(`Mutant coverage: ${this.coverage}%`)
+          // process.exit()
+          resolve()
+        })
       })
-    })
+    } catch (e) {
+      console.error(e.message)
+    } finally {
+      await this.delete()
+    }
   }
 
   async runCleanTests () {
@@ -81,12 +127,11 @@ class Mutode {
       child.connected && child.disconnect()
     }, 60000).unref()
 
-    return new Promise((resolve, reject) => {
+    await new Promise((resolve, reject) => {
       child.on('exit', code => {
-        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to run'))
+        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-        this.expectedTime = diff
-        this.timeout = Math.max(diff * 2, 2)
+        this.timeout = Math.max(diff * 2, 5000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         resolve()
       })
@@ -94,7 +139,7 @@ class Mutode {
   }
 
   loadMutants () {
-    console.logSame('Loading mutants...')
+    console.logSame('Loading mutants... ')
     const mutatorsPath = path.resolve(__dirname, 'mutators/')
     fs.readdirSync(mutatorsPath).forEach(file => {
       const filePath = path.join(mutatorsPath, file)
@@ -106,20 +151,33 @@ class Mutode {
     console.log('Done\n')
   }
 
+  async copyFirst () {
+    console.logSame(`Creating a copy of your module... `)
+    await copyDir('./', `../mutode-0`)
+    console.log('Done\n')
+  }
+
+  async copy () {
+    console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
+    for (let i = 1; i < this.concurrency; i++) {
+      console.logSame(`${i}.. `)
+      await copyDir('./', `../mutode-${i}`)
+    }
+    this.ready = true
+    console.log('Done\n')
+  }
+
   static mkdir () {
     mkdirp.sync(path.resolve('./.mutode'))
   }
 
-  static async copy () {
-    console.logSame('Creating a copy of your module... ')
-    await copyDir('./', '../mutode-tmp')
-    console.log('Done\n')
-  }
-
-  static async delete () {
-    if (!fs.existsSync('../mutode-tmp')) return
-    console.logSame('Deleting folder... ')
-    await del('../mutode-tmp', {force: true})
+  async delete () {
+    const toDelete = await globby('../mutode-*')
+    if (!toDelete) return
+    console.logSame('Deleting copies... ')
+    for (const path of toDelete) {
+      await del(path, {force: true})
+    }
     console.log('Done\n')
   }
 }
