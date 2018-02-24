@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>mutators/mathMutator.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">mutators/mathMutator.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const async = require('async')
+const debug = require('debug')('mutode:mathMutator')
+const jsDiff = require('diff')
+const esprima = require('esprima')
+const esquery = require('esquery')
+const chalk = require('chalk')
+
+const mutantRunner = require('../mutantRunner')
+
+/**
+ * Hola
+ * @method
+ * @name mathMutator
+ * @memberOf module:Mutators
+ * @param mutodeInstance
+ * @param filePath
+ * @param lines
+ * @param queue
+ * @returns {Promise}
+ */
+module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue}) {
+  debug('Running math mutator on %s', filePath)
+  await new Promise((resolve, reject) => {
+    async.timesSeries(lines.length, async n => {
+      const line = lines[n]
+      try {
+        const ast = esprima.parse(line)
+        let result = esquery(ast, '[type="BinaryExpression"]')
+        if (result.length &lt; 1) result = esquery(ast, '[type="UpdateExpression"]')
+        if (result.length &lt; 1) return
+      } catch (e) {
+        // console.error(e)
+      }
+      const operators = [
+        ['+', '-'],
+        ['-', '+'],
+        ['*', '/'],
+        ['/', '*'],
+        ['%', '*'],
+        ['&amp;', '|'],
+        ['|', '&amp;'],
+        ['^', '|'],
+        ['&lt;&lt;', '>>'],
+        ['>>', '&lt;&lt;'],
+        ['++', '--'],
+        ['--', '++'],
+        ['**', '*']
+      ]
+      const mutants = []
+      for (const pair of operators) {
+        const regex = pair[0].length === 1 ? `[^\\${pair[0]}]\\${pair[0]}[^\\${pair[0]}]` : `\\${pair[0].charAt(0)}{${pair[0].length}}`
+        const reg = new RegExp(regex, 'g')
+        let matches = null
+        while ((matches = reg.exec(line)) !== null) {
+          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
+        }
+      }
+      for (const mutant of mutants) {
+        mutodeInstance.mutants++
+        const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
+          if (stringDiff.added) return chalk.green(stringDiff.value)
+          else if (stringDiff.removed) return chalk.red(stringDiff.value)
+          else return chalk.gray(stringDiff.value)
+        }).join('')
+        const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
+        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        const linesCopy = lines.slice()
+        linesCopy[n] = mutant
+        const contentToWrite = linesCopy.join('\n')
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      }
+    }, err => {
+      if (err) return reject(err)
+      resolve()
+    })
+  })
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 24 2018 17:56:57 GMT-0500 (-05) using the Minami theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
