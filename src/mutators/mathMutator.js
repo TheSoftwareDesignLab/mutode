@@ -1,5 +1,5 @@
 const async = require('async')
-const debug = require('debug')('mathMutator')
+const debug = require('debug')('mutode:mathMutator')
 const jsDiff = require('diff')
 const esprima = require('esprima')
 const esquery = require('esquery')
@@ -7,7 +7,7 @@ const chalk = require('chalk')
 
 const genericMutator = require('../mutantRunner')
 
-module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
+module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running math mutator on %s', filePath)
   await new Promise((resolve, reject) => {
     async.timesSeries(lines.length, async n => {
@@ -41,7 +41,6 @@ module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
         const reg = new RegExp(regex, 'g')
         let matches = null
         while ((matches = reg.exec(line)) !== null) {
-          // console.log(`match at line ${n}`)
           mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
         }
       }
@@ -53,7 +52,7 @@ module.exports = async function ({mutodeInstance, filePath, lines, queue}) {
           else return chalk.gray(stringDiff.value)
         }).join('')
         const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
-        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: '${line.trim()}' > '${mutant.trim()}'...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
