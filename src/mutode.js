@@ -15,15 +15,18 @@ const readFile = promisify(fs.readFile)
 console.logSame = (t) => process.stdout.write(t)
 
 /**
- * Mutode main class
+ * Mutode's main class
  */
 class Mutode {
   /**
    * Create a new Mutode instance
-   * @param paths {array} - Paths or files to mutate
-   * @param concurrency {number} - Number of concurrent workers
+   * @param opts {Object}
+   * @param {array} [opts.paths = [`src/**`]] - Glob matched paths or files to mutate
+   * @param {number} [opts.concurrency = # of cpu cores] - Number of concurrent workers
+   * @param {array} [opts.mutators = ['*']]- Mutators to load (e.g. *deletion*)
+   * @returns {Mutode} - Returns an instance of mutode
    */
-  constructor ({paths = ['src/*'], concurrency = os.cpus().length}) {
+  constructor ({paths = ['src/**'], concurrency = os.cpus().length, mutators = ['*']}) {
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
     if (this.filePaths.length === 0) {
@@ -31,20 +34,18 @@ class Mutode {
     }
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s', this.filePaths, concurrency)
 
+    this.mutators = mutators
+    this.concurrency = concurrency
     this.mutants = 0
     this.killed = 0
     this.survivors = 0
     this.discarded = 0
     this.coverage = 0
-    this.mutators = []
-    this.concurrency = concurrency
     this.workers = {}
     for (let i = 0; i < this.concurrency; i++) {
       this.workers[i] = true
     }
     this.ready = false
-
-    this.loadMutants()
 
     const mutantsLogFile = fs.createWriteStream(path.resolve('./.mutode/mutants.log'), {flags: 'w'})
     this.mutantLog = string => mutantsLogFile.write(string + '\n')
@@ -66,9 +67,11 @@ class Mutode {
    * @returns {Promise} - Promise that resolves once this instance's execution is completed.
    */
   async run () {
+    if (this.mutants > 0) throw new Error('This instance has already been executed')
     try {
       await Mutode.delete()
       await Mutode.copyFirst()
+      this.mutators = await Mutode.loadMutants(this.mutators)
       this.timeout = await Mutode.timeCleanTests()
       this.copied = Mutode.copy(this.concurrency)
       await new Promise((resolve, reject) => {
@@ -81,12 +84,17 @@ class Mutode {
     }
   }
 
+  /**
+   * Function that returns an async function to process one file binded to the instance scope.
+   * @private
+   * @returns {function(filePath)} - Async function that runs instance's mutators and executes generated mutants for one file.
+   */
   fileProcessor () {
     return async filePath => {
       debug('Creating mutants for %s', filePath)
 
       const queue = async.queue(async task => {
-        const i = await this.freeQueue()
+        const i = await this.freeWorker()
         debug('Running task in worker %d', i)
         await task(i)
         this.workers[i] = true
@@ -124,8 +132,9 @@ class Mutode {
 
   /**
    * Promise handler that returns a function that runs when mutants execution is completed.
-   * @param resolve - Promise resolve handler
-   * @param reject - Promise reject handler
+   * @private
+   * @param resolve {function} - Promise resolve handler
+   * @param reject {function} - Promise reject handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
   done (resolve, reject) {
@@ -144,8 +153,9 @@ class Mutode {
 
   /**
    * Function that returns the index of the first worker that is free.
+   * @private
    */
-  async freeQueue () {
+  async freeWorker () {
     for (let i = 0; i < this.concurrency; i++) {
       if (this.workers[i]) {
         this.workers[i] = false
@@ -156,6 +166,7 @@ class Mutode {
 
   /**
    * Times the AUT's test suite execution.
+   * @private
    * @returns {Promise} - Promise that resolves once AUT's test suite execution is completed.
    */
   static async timeCleanTests () {
@@ -180,22 +191,26 @@ class Mutode {
 
   /**
    * Synchronous load of mutators.
+   * @private
+   * @returns {Promise} - Promise that resolves with the loaded mutators
    */
-  loadMutants () {
+  static async loadMutants (mutatorsNames) {
     console.logSame('Loading mutators... ')
+    let mutatorsPaths = mutatorsNames.map(m => `mutators/${m}Mutator.js`)
+    const mutators = []
     const mutatorsPath = path.resolve(__dirname, 'mutators/')
-    fs.readdirSync(mutatorsPath).forEach(file => {
-      const filePath = path.join(mutatorsPath, file)
-      let mutant = filePath.replace(mutatorsPath, '').replace('/', '').replace('.js', '')
-      let requireFilePath = path.resolve(filePath)
-      this.mutators.push(require(requireFilePath))
-      debug('Loaded mutant %s', mutant)
-    })
+    mutatorsPaths = await globby(mutatorsPaths, {cwd: __dirname, absolute: true})
+    for (const mutatorPath of mutatorsPaths) {
+      debug('Loaded mutator %s', mutatorPath.replace(mutatorsPath + '/', '').replace('Mutator.js', ''))
+      mutators.push(require(path.resolve(mutatorPath)))
+    }
     console.log('Done\n')
+    return mutators
   }
 
   /**
    * Creates a an exact copy of the AUT.
+   * @private
    * @returns {Promise} - Promise that resolves once the copy is created.
    */
   static async copyFirst () {
@@ -206,6 +221,7 @@ class Mutode {
 
   /**
    * Creates <i>this.concurrency<i/> exact copies of the AUT.
+   * @private
    * @returns {Promise} - Promise that resolves once the copies are created.
    */
   static async copy (copies) {
@@ -220,6 +236,7 @@ class Mutode {
 
   /**
    * Creates the <i>.mutode</i> folder to save logs.
+   * @private
    */
   static mkdir () {
     mkdirp.sync(path.resolve('.mutode'))
@@ -227,6 +244,7 @@ class Mutode {
 
   /**
    * Deletes available copies of the AUT.
+   * @private
    * @returns {Promise} - Promise that resolves once copies have been deleted.
    */
   static async delete () {
@@ -239,5 +257,9 @@ class Mutode {
     console.log('Done\n')
   }
 }
+
+/**
+ * @module Mutators
+ */
 
 module.exports = Mutode

@@ -5,8 +5,19 @@ const esprima = require('esprima')
 const esquery = require('esquery')
 const chalk = require('chalk')
 
-const genericMutator = require('../mutantRunner')
+const mutantRunner = require('../mutantRunner')
 
+/**
+ * Hola
+ * @method
+ * @name mathMutator
+ * @memberOf module:Mutators
+ * @param mutodeInstance
+ * @param filePath
+ * @param lines
+ * @param queue
+ * @returns {Promise}
+ */
 module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running math mutator on %s', filePath)
   await new Promise((resolve, reject) => {
@@ -56,7 +67,7 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
-        queue.push(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
     }, err => {
       if (err) return reject(err)

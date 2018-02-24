@@ -3,18 +3,18 @@ const fs = require('fs')
 const path = require('path')
 
 /**
- * @module Mutant
+ * @module MutantRunner
  */
 
 /**
- * mutant runner
- * @param mutodeInstance
- * @param filePath
- * @param contentToWrite
- * @param log
- * @returns {function(*)}
+ * Mutant runner
+ * @param mutodeInstance {Mutode} - Mutode's instance
+ * @param filePath {string} - File path where the mutant is being inserted
+ * @param contentToWrite {string} - File's content with the mutant
+ * @param log {string} - Mutant's description
+ * @returns {function} - Function that runs the mutant in the worker passed by index
  */
-module.exports = function mutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
+module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
   return async index => {
     await new Promise((resolve, reject) => {
       fs.writeFileSync(`.mutode/mutode-${index}/${filePath}`, contentToWrite)

@@ -1,8 +1,19 @@
 const async = require('async')
 const debug = require('debug')('mutode:deletionMutator')
 
-const genericMutator = require('../mutantRunner')
+const mutantRunner = require('../mutantRunner')
 
+/**
+ * Mutator that traverses files and deletes single lines.
+ * @method
+ * @name deletionMutator
+ * @memberOf module:Mutators
+ * @param mutodeInstance
+ * @param filePath
+ * @param lines
+ * @param queue
+ * @returns {Promise}
+ */
 module.exports = async function deletionMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running deletion mutator on %s', filePath)
   await new Promise((resolve, reject) => {
@@ -22,7 +33,7 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
       debug(log)
       mutodeInstance.mutantLog(log)
       const contentToWrite = lines.slice(0, n).concat(lines.slice(n + 1, lines.length)).join('\n')
-      queue.push(genericMutator({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
     }, resolve)
   })
 }
