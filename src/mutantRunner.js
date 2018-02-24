@@ -2,6 +2,18 @@ const spawn = require('child_process').spawn
 const fs = require('fs')
 const path = require('path')
 
+/**
+ * @module Mutant
+ */
+
+/**
+ * mutant runner
+ * @param mutodeInstance
+ * @param filePath
+ * @param contentToWrite
+ * @param log
+ * @returns {function(*)}
+ */
 module.exports = function mutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
   return async index => {
     await new Promise((resolve, reject) => {

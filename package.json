@@ -7,8 +7,8 @@
     "mutode": "./bin/mutode"
   },
   "scripts": {
-    "pretest": "standard src",
-    "test": "nyc ava"
+    "jsdoc": "jsdoc -c .jsdoc.json",
+    "test": "standard src && nyc ava"
   },
   "keywords": [
     "mutation",
@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "ava": "^0.25.0",
+    "minami": "^1.2.3",
     "nyc": "^11.4.1",
     "standard": "^11.0.0"
   },
