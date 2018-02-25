@@ -17,7 +17,8 @@
     "mutants",
     "test",
     "tests",
-    "framework"
+    "framework",
+    "tool"
   ],
   "author": "Diego Rodríguez Baquero <diegorbaquero@gmail.com> (https://diegorbaquero.com)",
   "license": "MIT",
