@@ -42,8 +42,6 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         ['^', '|'],
         ['<<', '>>'],
         ['>>', '<<'],
-        ['++', '--'],
-        ['--', '++'],
         ['**', '*']
       ]
       const mutants = []
@@ -56,14 +54,15 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         }
       }
       for (const mutant of mutants) {
-        mutodeInstance.mutants++
+        const mutantId = ++mutodeInstance.mutants
         const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
           if (stringDiff.added) return chalk.green(stringDiff.value)
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
-        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        const log = `MUTANT ${mutantId}:\tLine ${n}: ${diff}...\t`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
