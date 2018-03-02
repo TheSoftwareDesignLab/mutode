@@ -28,6 +28,10 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
         debug('Structure line, continuing')
         return
       }
+      if (line.includes('console.') || line.includes('debug(')) {
+        debug('Logging line, continuing')
+        return
+      }
       const mutantId = ++mutodeInstance.mutants
       const log = `MUTANT ${mutantId}:\tDeleted line ${n + 1}: \`${lines[n].trim()}\`...\t`
       debug(log)
