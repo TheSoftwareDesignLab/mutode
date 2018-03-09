@@ -8,10 +8,21 @@ const opts = {}
 
 if (process.env.MUTODE_CONCURRENCY) opts.concurrency = process.env.MUTODE_CONCURRENCY
 
-const mutator = new Mutode(opts)
+let mutode = new Mutode(opts)
 
-test(async t => {
-  t.is(mutator.coverage, 0)
-  await mutator.run()
-  t.is(mutator.coverage, 100)
+test('Example module', async t => {
+  t.is(mutode.coverage, 0)
+  await mutode.run()
+  t.true(mutode.killed > 0)
+  t.true(mutode.survived > 0)
+  t.true(mutode.discarded > 0)
+  t.true(mutode.coverage > 0)
+})
+
+test('Empty paths', async t => {
+  t.is(mutode.coverage, 0)
+  t.throws(() => {
+    const mutodeFail = new Mutode({paths: 'hello.js'})
+    mutode.run()
+  })
 })
