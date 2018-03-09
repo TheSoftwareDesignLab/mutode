@@ -21,12 +21,12 @@ class Mutode {
   /**
    * Create a new Mutode instance
    * @param opts {Object}
-   * @param {array<string>} [opts.paths = ['index.js']] - Glob matched paths or files to mutate
+   * @param {array<string>} [opts.paths = ['index.js', 'src/* *\/*.js']] - Glob matched paths or files to mutate
    * @param {number} [opts.concurrency = # of cpu cores] - Number of concurrent workers
    * @param {array<string>} [opts.mutators = All]- Mutators to load (e.g. *deletion*)
    * @returns {Mutode} - Returns an instance of mutode
    */
-  constructor ({paths = ['index.js'], concurrency = os.cpus().length, mutators = ['*']} = {}) {
+  constructor ({paths = ['index.js', 'src/**/*.js'], concurrency = os.cpus().length, mutators = ['*']} = {}) {
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s', this.filePaths, concurrency)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
@@ -38,7 +38,7 @@ class Mutode {
     this.concurrency = concurrency
     this.mutants = 0
     this.killed = 0
-    this.survivors = 0
+    this.survived = 0
     this.discarded = 0
     this.coverage = 0
     this.workers = {}
@@ -68,20 +68,15 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
-    try {
-      await Mutode.delete()
-      await Mutode.copyFirst()
-      this.mutators = await Mutode.loadMutants(this.mutators)
-      this.timeout = await Mutode.timeCleanTests()
-      this.copied = Mutode.copy(this.concurrency)
-      await new Promise((resolve, reject) => {
-        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve, reject))
-      })
-    } catch (e) {
-      console.error(e.message)
-    } finally {
-      await Mutode.delete()
-    }
+    await Mutode.delete()
+    await Mutode.copyFirst()
+    this.mutators = await Mutode.loadMutants(this.mutators)
+    this.timeout = await Mutode.timeCleanTests()
+    this.copied = Mutode.copy(this.concurrency)
+    await new Promise(resolve => {
+      async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
+    })
+    await Mutode.delete()
   }
 
   /**
@@ -100,15 +95,12 @@ class Mutode {
         this.workers[i] = true
         debug('Finished running task in worker %d', i)
       }, this.concurrency)
+      queue.pause()
 
-      if (!this.ready) {
-        debug('Queue paused')
-        queue.pause()
-        this.copied.then(() => {
-          debug('Queue resumed %s', queue.length())
-          queue.resume()
-        })
-      }
+      this.copied.then(() => {
+        console.log('Running mutants for %s', filePath)
+        queue.resume()
+      })
 
       const fileContent = (await readFile(filePath)).toString()
       const lines = fileContent.split('\n')
@@ -137,16 +129,11 @@ class Mutode {
    * @param reject {function} - Promise reject handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
-  done (resolve, reject) {
-    return err => {
-      if (err) {
-        console.error(err)
-        reject(err)
-      }
-      console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survivors} survived and ${this.discarded} were discarded`)
+  done (resolve) {
+    return () => {
+      console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
-      // process.exit()
       resolve()
     }
   }
@@ -173,10 +160,6 @@ class Mutode {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
     const child = spawn('npm', ['test'], {cwd: path.resolve('.mutode/mutode-0')})
-
-    setTimeout(() => {
-      child.connected && child.disconnect()
-    }, 60000).unref()
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
@@ -249,7 +232,7 @@ class Mutode {
    */
   static async delete () {
     const toDelete = await globby('.mutode/mutode-*', {dot: true, onlyDirectories: true})
-    if (!toDelete) return
+    if (toDelete && toDelete.length === 0) return
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})
