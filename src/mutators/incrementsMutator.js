@@ -20,13 +20,12 @@ const mutantRunner = require('../mutantRunner')
  */
 module.exports = async function incrementsMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running increments mutator on %s', filePath)
-  await new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       try {
         const ast = esprima.parse(line)
-        let result = esquery(ast, '[type="BinaryExpression"]')
-        if (result.length < 1) result = esquery(ast, '[type="UpdateExpression"]')
+        const result = esquery(ast, '[type="UpdateExpression"]')
         if (result.length < 1) return
       } catch (e) {
         // console.error(e)
@@ -37,10 +36,10 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
       ]
       const mutants = []
       for (const pair of operators) {
-        const reg = new RegExp(`\\${pair[0].charAt(0)}{${pair[0].length}}`, 'g')
+        const reg = new RegExp(`\\${pair[0].charAt(0)}{2}`, 'g')
         let matches = null
         while ((matches = reg.exec(line)) !== null) {
-          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
+          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + 2))
         }
       }
       for (const mutant of mutants) {
@@ -50,17 +49,14 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        const log = `MUTANT ${mutantId}:\tLine ${n}: ${diff}...\t`
+        const log = `MUTANT ${mutantId}:\tIM Line ${n + 1}: ${diff}...\t`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tIM Line ${n + 1}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
-    }, err => {
-      if (err) return reject(err)
-      resolve()
-    })
+    }, resolve)
   })
 }
