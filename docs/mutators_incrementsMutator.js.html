@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>mutantRunner.js - Documentation</title>
+    <title>mutators/incrementsMutator.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">mutantRunner.js</h1>
+    <h1 class="page-title">mutators/incrementsMutator.js</h1>
     
 
     
@@ -39,55 +39,67 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const Debug = require('debug')
-const spawn = require('child_process').spawn
-const fs = require('fs')
-const path = require('path')
+            <pre class="prettyprint source linenums"><code>const async = require('async')
+const debug = require('debug')('mutode:incrementsMutator')
+const jsDiff = require('diff')
+const esprima = require('esprima')
+const esquery = require('esquery')
+const chalk = require('chalk')
+
+const mutantRunner = require('../mutantRunner')
 
 /**
- * @module MutantRunner
+ * Hola
+ * @method
+ * @name incrementsMutator
+ * @memberOf module:Mutators
+ * @param mutodeInstance
+ * @param filePath
+ * @param lines
+ * @param queue
+ * @returns {Promise}
  */
-
-/**
- * Mutant runner
- * @param mutodeInstance {Mutode} - Mutode's instance
- * @param filePath {string} - File path where the mutant is being inserted
- * @param contentToWrite {string} - File's content with the mutant
- * @param log {string} - Mutant's description
- * @returns {function} - Function that runs the mutant in the worker passed by index
- */
-module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
-  const debug = Debug(`mutants:${filePath}`)
-  return async index => {
-    await new Promise((resolve, reject) => {
-      fs.writeFileSync(`.mutode/mutode-${index}/${filePath}`, contentToWrite)
-      const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${index}`)})
-
-      child.stderr.on('data', data => {
-        debug(data.toString())
-      })
-
-      const timeout = setTimeout(() => {
-        console.log(`${log} discarded (timeout)`)
-        child.kill('SIGKILL')
-      }, mutodeInstance.timeout).unref()
-
-      child.on('exit', (code, signal) => {
-        clearTimeout(timeout)
-        if (code === 0) {
-          console.log(`${log} survived`)
-          mutodeInstance.survived++
-        } else if (signal) {
-          mutodeInstance.discarded++
-        } else {
-          console.log(`${log} killed`)
-          mutodeInstance.killed++
+module.exports = async function incrementsMutator ({mutodeInstance, filePath, lines, queue}) {
+  debug('Running increments mutator on %s', filePath)
+  return new Promise(resolve => {
+    async.timesSeries(lines.length, async n => {
+      const line = lines[n]
+      try {
+        const ast = esprima.parse(line)
+        const result = esquery(ast, '[type="UpdateExpression"]')
+        if (result.length &lt; 1) return
+      } catch (e) {
+        // console.error(e)
+      }
+      const operators = [
+        ['++', '--'],
+        ['--', '++']
+      ]
+      const mutants = []
+      for (const pair of operators) {
+        const reg = new RegExp(`\\${pair[0].charAt(0)}{2}`, 'g')
+        let matches = null
+        while ((matches = reg.exec(line)) !== null) {
+          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + 2))
         }
-        // console.log('exit', code)
-        resolve()
-      })
-    })
-  }
+      }
+      for (const mutant of mutants) {
+        const mutantId = ++mutodeInstance.mutants
+        const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
+          if (stringDiff.added) return chalk.green(stringDiff.value)
+          else if (stringDiff.removed) return chalk.red(stringDiff.value)
+          else return chalk.gray(stringDiff.value)
+        }).join('')
+        const log = `MUTANT ${mutantId}:\tIM Line ${n + 1}: ${diff}...\t`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tIM Line ${n + 1}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        const linesCopy = lines.slice()
+        linesCopy[n] = mutant
+        const contentToWrite = linesCopy.join('\n')
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      }
+    }, resolve)
+  })
 }
 </code></pre>
         </article>

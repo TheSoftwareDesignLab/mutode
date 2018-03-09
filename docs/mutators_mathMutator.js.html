@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li>
 </nav>
 
 <div id="main">
@@ -61,7 +61,7 @@ const mutantRunner = require('../mutantRunner')
  */
 module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running math mutator on %s', filePath)
-  await new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       try {
@@ -69,6 +69,7 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         let result = esquery(ast, '[type="BinaryExpression"]')
         if (result.length &lt; 1) result = esquery(ast, '[type="UpdateExpression"]')
         if (result.length &lt; 1) return
+        // console.log('MM query')
       } catch (e) {
         // console.error(e)
       }
@@ -83,8 +84,6 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         ['^', '|'],
         ['&lt;&lt;', '>>'],
         ['>>', '&lt;&lt;'],
-        ['++', '--'],
-        ['--', '++'],
         ['**', '*']
       ]
       const mutants = []
@@ -97,23 +96,21 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         }
       }
       for (const mutant of mutants) {
-        mutodeInstance.mutants++
+        const mutantId = ++mutodeInstance.mutants
         const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
           if (stringDiff.added) return chalk.green(stringDiff.value)
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        const log = `MUTANT ${mutodeInstance.mutants}:\tLine ${n}: ${diff}...\t`
-        mutodeInstance.mutantLog(`MUTANT ${mutodeInstance.mutants}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        const log = `MUTANT ${mutantId}:\tMM Line ${n + 1}: ${diff}...\t`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tMM ${filePath} Line ${n + 1}: \`${line.trim()}\` > \`${mutant.trim()}'\`...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
-    }, err => {
-      if (err) return reject(err)
-      resolve()
-    })
+    }, resolve)
   })
 }
 </code></pre>
@@ -128,7 +125,7 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sat Feb 24 2018 18:32:20 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Mar 08 2018 22:11:55 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
