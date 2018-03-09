@@ -1,3 +1,4 @@
+const Debug = require('debug')
 const spawn = require('child_process').spawn
 const fs = require('fs')
 const path = require('path')
@@ -15,10 +16,15 @@ const path = require('path')
  * @returns {function} - Function that runs the mutant in the worker passed by index
  */
 module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
+  const debug = Debug(`mutants:${filePath}`)
   return async index => {
     await new Promise((resolve, reject) => {
       fs.writeFileSync(`.mutode/mutode-${index}/${filePath}`, contentToWrite)
       const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${index}`)})
+
+      child.stderr.on('data', data => {
+        debug(data.toString())
+      })
 
       const timeout = setTimeout(() => {
         console.log(`${log} discarded (timeout)`)
@@ -29,7 +35,7 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
         clearTimeout(timeout)
         if (code === 0) {
           console.log(`${log} survived`)
-          mutodeInstance.survivors++
+          mutodeInstance.survived++
         } else if (signal) {
           mutodeInstance.discarded++
         } else {
