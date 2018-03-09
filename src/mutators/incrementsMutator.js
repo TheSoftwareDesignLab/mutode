@@ -39,7 +39,11 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
         const reg = new RegExp(`\\${pair[0].charAt(0)}{2}`, 'g')
         let matches = null
         while ((matches = reg.exec(line)) !== null) {
-          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + 2))
+          mutants.push(
+            line.substr(0, matches.index + matches[0].indexOf(pair[0])) +
+            pair[1] +
+            line.substr(matches.index + matches[0].indexOf(pair[0]) + 2)
+          )
         }
       }
       for (const mutant of mutants) {

@@ -51,7 +51,11 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         const reg = new RegExp(regex, 'g')
         let matches = null
         while ((matches = reg.exec(line)) !== null) {
-          mutants.push(line.substr(0, matches.index + matches[0].indexOf(pair[0])) + pair[1] + line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length))
+          mutants.push(
+            line.substr(0, matches.index + matches[0].indexOf(pair[0])) +
+            pair[1] +
+            line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length)
+          )
         }
       }
       for (const mutant of mutants) {
