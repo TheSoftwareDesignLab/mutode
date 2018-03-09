@@ -20,7 +20,7 @@ const mutantRunner = require('../mutantRunner')
  */
 module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue}) {
   debug('Running math mutator on %s', filePath)
-  await new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     async.timesSeries(lines.length, async n => {
       const line = lines[n]
       try {
@@ -28,6 +28,7 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         let result = esquery(ast, '[type="BinaryExpression"]')
         if (result.length < 1) result = esquery(ast, '[type="UpdateExpression"]')
         if (result.length < 1) return
+        // console.log('MM query')
       } catch (e) {
         // console.error(e)
       }
@@ -60,17 +61,14 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
           else if (stringDiff.removed) return chalk.red(stringDiff.value)
           else return chalk.gray(stringDiff.value)
         }).join('')
-        const log = `MUTANT ${mutantId}:\tLine ${n}: ${diff}...\t`
+        const log = `MUTANT ${mutantId}:\tMM Line ${n + 1}: ${diff}...\t`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tLine ${n}: \`${line.trim()}\` > \${mutant.trim()}'\`...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tMM ${filePath} Line ${n + 1}: \`${line.trim()}\` > \`${mutant.trim()}'\`...\t`)
         const linesCopy = lines.slice()
         linesCopy[n] = mutant
         const contentToWrite = linesCopy.join('\n')
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
-    }, err => {
-      if (err) return reject(err)
-      resolve()
-    })
+    }, resolve)
   })
 }
