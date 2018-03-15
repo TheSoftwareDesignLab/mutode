@@ -1,4 +1,5 @@
 const async = require('async')
+const babylon = require('babylon')
 const spawn = require('child_process').spawn
 const debug = require('debug')('mutode')
 const del = require('del')
@@ -27,7 +28,7 @@ class Mutode {
    * @returns {Mutode} - Returns an instance of mutode
    */
   constructor ({paths = ['index.js', 'src/**/*.js'], concurrency = os.cpus().length, mutators = ['*']} = {}) {
-    debug('Config:\n\tFile paths %o\n\tConcurrency: %s', this.filePaths, concurrency)
+    debug('Config:\n\tFile paths %o\n\tConcurrency: %s', paths, concurrency)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
     if (this.filePaths.length === 0) {
@@ -104,9 +105,10 @@ class Mutode {
 
       const fileContent = (await readFile(filePath)).toString()
       const lines = fileContent.split('\n')
+      const ast = babylon.parse(fileContent)
       for (const mutator of this.mutators) {
         debug('Running mutator %s', mutator.name)
-        await mutator({mutodeInstance: this, filePath, lines, queue})
+        await mutator({mutodeInstance: this, filePath, lines, queue, ast})
       }
       await new Promise(resolve => {
         debug('Adding drain function to queue %d', queue.length())
