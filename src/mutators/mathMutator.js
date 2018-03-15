@@ -1,4 +1,3 @@
-const async = require('async')
 const walk = require('babylon-walk')
 const debug = require('debug')('mutode:mathMutator')
 const jsDiff = require('diff')
