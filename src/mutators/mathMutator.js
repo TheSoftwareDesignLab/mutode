@@ -33,7 +33,7 @@ const operators = [
 module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running math mutator on %s', filePath)
   walk.simple(ast, {
-    BinaryExpression (node, state) {
+    BinaryExpression (node) {
       for (const pair of operators) {
         if (node.operator !== pair[0] || node.left.loc.end - node.right.loc.start > 5) {
           continue
@@ -60,5 +60,5 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
     }
-  }, {})
+  })
 }

@@ -27,7 +27,7 @@ module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, fi
   debug('Running conditionals boundary mutator on %s', filePath)
 
   walk.simple(ast, {
-    BinaryExpression (node, state) {
+    BinaryExpression (node) {
       for (const pair of operators) {
         if (node.operator !== pair[0]) {
           continue
@@ -54,5 +54,5 @@ module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, fi
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
     }
-  }, {})
+  })
 }

@@ -1,9 +1,6 @@
-const async = require('async')
 const walk = require('babylon-walk')
 const debug = require('debug')('mutode:incrementsMutator')
 const jsDiff = require('diff')
-const esprima = require('esprima')
-const esquery = require('esquery')
 const chalk = require('chalk')
 
 const mutantRunner = require('../mutantRunner')
@@ -28,7 +25,7 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
   debug('Running increments mutator on %s', filePath)
 
   walk.simple(ast, {
-    UpdateExpression (node, state) {
+    UpdateExpression (node) {
       for (const pair of operators) {
         if (node.operator !== pair[0]) {
           continue
@@ -55,5 +52,5 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
     }
-  }, {})
+  })
 }
