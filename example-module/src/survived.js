@@ -10,7 +10,6 @@ module.exports = {
   increments (a) {
     a++
     a--
-    return 1
   },
   condBound (a) {
     if (a < 10) {

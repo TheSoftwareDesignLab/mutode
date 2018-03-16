@@ -19,7 +19,7 @@ assert.strictEqual(survived.math(2, 3), 2)
 // Increments
 assert.strictEqual(killed.increments(1), 1)
 assert.strictEqual(killed.increments(10), 10)
-assert.strictEqual(survived.increments(1), 1)
+assert.strictEqual(survived.increments(1), undefined)
 
 // Conditionals boundary
 assert.strictEqual(killed.condBound(5), 5)
