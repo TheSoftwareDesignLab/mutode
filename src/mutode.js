@@ -35,6 +35,7 @@ class Mutode {
       throw new Error('No files found in the specified paths')
     }
 
+    this.id = Math.random().toString(36).substr(2, 5)
     this.mutators = mutators
     this.concurrency = concurrency
     this.mutants = 0
@@ -46,7 +47,6 @@ class Mutode {
     for (let i = 0; i < this.concurrency; i++) {
       this.workers[i] = true
     }
-    this.ready = false
 
     const mutantsLogFile = fs.createWriteStream(path.resolve('./.mutode/mutants.log'), {flags: 'w'})
     this.mutantLog = string => mutantsLogFile.write(string + '\n')
@@ -69,15 +69,20 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
-    await Mutode.delete()
-    await Mutode.copyFirst()
-    this.mutators = await Mutode.loadMutants(this.mutators)
-    this.timeout = await Mutode.timeCleanTests()
-    this.copied = Mutode.copy(this.concurrency)
-    await new Promise(resolve => {
-      async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
-    })
-    await Mutode.delete()
+    try {
+      await this.copyFirst()
+      this.mutators = await Mutode.loadMutants(this.mutators)
+      this.timeout = await this.timeCleanTests()
+      this.copied = this.copy()
+      await new Promise(resolve => {
+        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
+      })
+    } catch (e) {
+      debug(e)
+      throw e
+    } finally {
+      await this.delete()
+    }
   }
 
   /**
@@ -115,7 +120,7 @@ class Mutode {
         queue.drain = () => {
           debug(`Finished %s`, filePath)
           for (let i = 0; i < this.concurrency; i++) {
-            fs.writeFileSync(`.mutode/mutode-${i}/${filePath}`, fileContent) // Reset file to original content
+            fs.writeFileSync(`.mutode/mutode-${this.id}-${i}/${filePath}`, fileContent) // Reset file to original content
           }
           console.log()
           resolve()
@@ -158,10 +163,10 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once AUT's test suite execution is completed.
    */
-  static async timeCleanTests () {
+  async timeCleanTests () {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
-    const child = spawn('npm', ['test'], {cwd: path.resolve('.mutode/mutode-0')})
+    const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`)})
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
@@ -198,9 +203,9 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once the copy is created.
    */
-  static async copyFirst () {
+  async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-0`)
+    await copyDir('./', `.mutode/mutode-${this.id}-0`)
     console.log('Done\n')
   }
 
@@ -209,13 +214,12 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once the copies are created.
    */
-  static async copy (copies) {
-    console.logSame(`Creating ${copies} extra copies of your module... `)
-    for (let i = 1; i < copies; i++) {
+  async copy () {
+    console.logSame(`Creating ${this.concurrency} extra copies of your module... `)
+    for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${i}`)
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`)
     }
-    this.ready = true
     console.log('Done\n')
   }
 
@@ -232,9 +236,8 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once copies have been deleted.
    */
-  static async delete () {
-    const toDelete = await globby('.mutode/mutode-*', {dot: true, onlyDirectories: true})
-    if (toDelete && toDelete.length === 0) return
+  async delete () {
+    const toDelete = await globby(`.mutode/mutode-${this.id}*`, {dot: true, onlyDirectories: true})
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})

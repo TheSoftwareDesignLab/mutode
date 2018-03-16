@@ -18,9 +18,9 @@ const path = require('path')
 module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
   const debug = Debug(`mutants:${filePath}`)
   return async index => {
-    await new Promise((resolve, reject) => {
-      fs.writeFileSync(`.mutode/mutode-${index}/${filePath}`, contentToWrite)
-      const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${index}`)})
+    await new Promise(resolve => {
+      fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
+      const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
 
       child.stderr.on('data', data => {
         debug(data.toString())
