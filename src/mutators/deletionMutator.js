@@ -21,16 +21,13 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
 
   walk.simple(ast, {
     Statement (node) {
-      debug(node)
       if (linesCheck[node.loc.start.line] || node.type === 'BlockStatement' || (node.consequent && node.consequent.type === 'BlockStatement')) {
         debug('Skipped line', node.loc.start.line)
         return
       }
-      debug('a')
       const line = node.loc.start.line
       const lineContent = lines[line - 1]
 
-      debug('b')
       linesCheck[line] = true
 
       if (lineContent.trim().startsWith('console.') || lineContent.trim().startsWith('debug(')) {
