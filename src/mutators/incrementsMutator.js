@@ -1,9 +1,8 @@
 const walk = require('babylon-walk')
 const debug = require('debug')('mutode:incrementsMutator')
-const jsDiff = require('diff')
-const chalk = require('chalk')
 
 const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
 
 const operators = [
   ['++', '--'],
@@ -38,11 +37,7 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
           lineContent.substr(node.loc.end.column)
 
         const mutantId = ++mutodeInstance.mutants
-        const diff = jsDiff.diffChars(lineContent.trim(), mutantLineContent.trim()).map(stringDiff => {
-          if (stringDiff.added) return chalk.green(stringDiff.value)
-          else if (stringDiff.removed) return chalk.red(stringDiff.value)
-          else return chalk.gray(stringDiff.value)
-        }).join('')
+        const diff = lineDiff(lineContent, mutantLineContent)
         const log = `MUTANT ${mutantId}:\tIM Line ${line}: ${diff}...\t`
         debug(log)
         mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tIM ${filePath} Line ${line}: \`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\`...\t`)
