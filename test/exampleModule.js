@@ -1,4 +1,6 @@
 const test = require('ava')
+const del = require('del')
+const globby = require('globby')
 
 const Mutode = require('../src/mutode')
 
@@ -8,6 +10,10 @@ const SURVIVED = 19
 const DISCARDED = 1
 
 process.chdir('./example-module')
+const toDelete = globby.sync(`.mutode/mutode-*`, {dot: true, onlyDirectories: true})
+for (const path of toDelete) {
+  del.sync(path, {force: true})
+}
 
 const opts = {}
 
