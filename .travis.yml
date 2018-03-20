@@ -4,6 +4,7 @@ node_js:
   - 'lts/*'
   - 'node'
 install:
+- npm install -g npm @latest
 - npm ci
 cache:
   directories:
