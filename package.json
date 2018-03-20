@@ -34,16 +34,13 @@
     "globby": "^8.0.1",
     "mkdirp": "^0.5.1",
     "recursive-copy": "^2.0.9",
-    "strip-ansi-stream": "^1.0.0"
+    "strip-ansi": "^4.0.0"
   },
   "devDependencies": {
     "ava": "^0.25.0",
     "minami": "^1.2.3",
     "nyc": "^11.6.0",
     "standard": "^11.0.1"
-  },
-  "ava": {
-    "failFast": false
   },
   "nyc": {
     "include": [
