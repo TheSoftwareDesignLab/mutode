@@ -2,10 +2,6 @@ const test = require('ava')
 
 const Mutode = require('../src/mutode')
 
-const opts = {}
-
-if (process.env.MUTODE_CONCURRENCY) opts.concurrency = process.env.MUTODE_CONCURRENCY
-
 test('New instance - Correct', async t => {
   let mutode = new Mutode()
   t.is(mutode.mutants, 0)

@@ -28,27 +28,30 @@ test.serial('Example module', async t => {
 })
 
 test.serial('Exmaple module - killed', async t => {
-  let mutode = new Mutode({
-    paths: 'src/killed.js',
-  })
+  const testOpts = Object.assign({
+    paths: 'src/killed.js'
+  }, opts)
+  let mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.mutants, mutode.killed)
   t.is(mutode.coverage, 100)
 })
 
 test.serial('Exmaple module - survived', async t => {
-  let mutode = new Mutode({
-    paths: 'src/survived.js',
-  })
+  const testOpts = Object.assign({
+    paths: 'src/survived.js'
+  }, opts)
+  let mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.mutants, mutode.survived)
   t.is(mutode.coverage, 0)
 })
 
 test.serial('Exmaple module - discarded', async t => {
-  let mutode = new Mutode({
-    paths: 'src/discarded.js',
-  })
+  const testOpts = Object.assign({
+    paths: 'src/discarded.js'
+  }, opts)
+  let mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.discarded, DISCARDED)
 })
