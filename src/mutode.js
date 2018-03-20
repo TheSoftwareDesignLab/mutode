@@ -9,11 +9,10 @@ const mkdirp = require('mkdirp')
 const os = require('os')
 const path = require('path')
 const copyDir = require('recursive-copy')
-const stripAnsiStream = require('strip-ansi-stream')
+const stripAnsi = require('strip-ansi')
 const {promisify} = require('util')
 
 const readFile = promisify(fs.readFile)
-console.logSame = (t) => process.stdout.write(t)
 
 /**
  * Mutode's main class
@@ -48,19 +47,17 @@ class Mutode {
       this.workers[i] = true
     }
 
-    const mutantsLogFile = fs.createWriteStream(path.resolve('./.mutode/mutants.log'), {flags: 'w'})
-    this.mutantLog = string => mutantsLogFile.write(string + '\n')
-    const logFile = fs.createWriteStream(path.resolve('./.mutode/mutode.log'), {flags: 'w'})
-    const stream = stripAnsiStream()
-
-    stream.pipe(logFile)
-
-    process.stdout.write = (function (write) {
-      return function (string, encoding, fd) {
-        write.apply(process.stdout, arguments)
-        stream.write(string)
-      }
-    })(process.stdout.write)
+    this.mutantsLogFile = fs.createWriteStream(path.resolve(`.mutode/mutants-${this.id}.log`), {flags: 'w'})
+    this.logFile = fs.createWriteStream(path.resolve(`.mutode/mutode-${this.id}.log`), {flags: 'w'})
+    this.mutantLog = string => this.mutantsLogFile.write(`${stripAnsi(string.trim())}\n`)
+    console.logSame = s => {
+      process.stdout.write(s)
+      this.logFile.write(stripAnsi(s))
+    }
+    console.log = (s = '') => {
+      process.stdout.write(`${s}\n`)
+      this.logFile.write(`${stripAnsi(s.trim())}\n`)
+    }
   }
 
   /**
@@ -82,6 +79,8 @@ class Mutode {
       throw e
     } finally {
       await this.delete()
+      this.mutantsLogFile.end()
+      this.logFile.end()
     }
   }
 
@@ -104,7 +103,7 @@ class Mutode {
       queue.pause()
 
       this.copied.then(() => {
-        console.log('Running mutants for %s', filePath)
+        console.log(`Running mutants for ${filePath}`)
         queue.resume()
       })
 
@@ -123,7 +122,7 @@ class Mutode {
             fs.writeFileSync(`.mutode/mutode-${this.id}-${i}/${filePath}`, fileContent) // Reset file to original content
           }
           console.log()
-          resolve()
+          setImmediate(resolve)
         }
       })
     }
@@ -133,7 +132,6 @@ class Mutode {
    * Promise handler that returns a function that runs when mutants execution is completed.
    * @private
    * @param resolve {function} - Promise resolve handler
-   * @param reject {function} - Promise reject handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
   done (resolve) {
@@ -141,7 +139,8 @@ class Mutode {
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
-      resolve()
+      console.log()
+      setImmediate(resolve)
     }
   }
 
@@ -215,7 +214,7 @@ class Mutode {
    * @returns {Promise} - Promise that resolves once the copies are created.
    */
   async copy () {
-    console.logSame(`Creating ${this.concurrency} extra copies of your module... `)
+    console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)
       await copyDir('./', `.mutode/mutode-${this.id}-${i}`)

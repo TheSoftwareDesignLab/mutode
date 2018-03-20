@@ -1,5 +1,6 @@
-const Debug = require('debug')
+const chalk = require('chalk')
 const spawn = require('child_process').spawn
+const Debug = require('debug')
 const fs = require('fs')
 const path = require('path')
 
@@ -19,6 +20,7 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
   const debug = Debug(`mutants:${filePath}`)
   return async index => {
     await new Promise(resolve => {
+      const startTime = process.hrtime()
       fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
       const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
 
@@ -27,19 +29,22 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
       })
 
       const timeout = setTimeout(() => {
-        console.log(`${log} discarded (timeout)`)
         child.kill('SIGKILL')
       }, mutodeInstance.timeout).unref()
 
       child.on('exit', (code, signal) => {
+        const endTime = process.hrtime(startTime)
+        const endTimeMS = (endTime[0] * 1e3 + endTime[1] / 1e6).toFixed(0)
+        const timeDiff = chalk.gray(`${endTimeMS} ms`)
         clearTimeout(timeout)
         if (code === 0) {
-          console.log(`${log} survived`)
+          console.log(`${log} ${chalk.bgRed('survived')} ${timeDiff}`)
           mutodeInstance.survived++
         } else if (signal) {
+          console.log(`${log} ${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
           mutodeInstance.discarded++
         } else {
-          console.log(`${log} killed`)
+          console.log(`${log} ${chalk.bgGreen('killed')} ${timeDiff}`)
           mutodeInstance.killed++
         }
         // console.log('exit', code)
