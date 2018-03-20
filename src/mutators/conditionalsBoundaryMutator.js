@@ -40,9 +40,9 @@ module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, fi
 
         const mutantId = ++mutodeInstance.mutants
         const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tCBM Line ${line}: ${diff}...\t`
+        const log = `MUTANT ${mutantId}:\tCBM Line ${line}:\t${diff}\t`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tCBM ${filePath} Line ${line}: \`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\`...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tCBM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')

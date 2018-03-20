@@ -38,9 +38,9 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
 
         const mutantId = ++mutodeInstance.mutants
         const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tIM Line ${line}: ${diff}...\t`
+        const log = `MUTANT ${mutantId}:\tIM Line ${line}:\t${diff}...\t`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tIM ${filePath} Line ${line}: \`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\`...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tIM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')

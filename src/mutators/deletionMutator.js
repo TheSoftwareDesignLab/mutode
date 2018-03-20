@@ -1,4 +1,5 @@
 const walk = require('babylon-walk')
+const chalk = require('chalk')
 const debug = require('debug')('mutode:deletionMutator')
 
 const mutantRunner = require('../mutantRunner')
@@ -40,7 +41,7 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
       }
 
       const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}: \`${lineContent.trim()}\`...\t`
+      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}:\t\`${chalk.inverse(lineContent.trim())}\`\t`
       debug(log)
       mutodeInstance.mutantLog(log)
       const contentToWrite = lines.slice(0, line - 1).concat(lines.slice(line, lines.length)).join('\n')
