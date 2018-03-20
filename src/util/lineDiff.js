@@ -3,8 +3,8 @@ const chalk = require('chalk')
 
 module.exports = (lineContent, mutantLineContent) => {
   return jsDiff.diffChars(lineContent.trim(), mutantLineContent.trim()).map(stringDiff => {
-    if (stringDiff.added) return chalk.green(stringDiff.value)
-    else if (stringDiff.removed) return chalk.red(stringDiff.value)
-    else return chalk.gray(stringDiff.value)
+    if (stringDiff.added) return chalk.bgGreen(stringDiff.value)
+    else if (stringDiff.removed) return chalk.bgRed(stringDiff.value)
+    else return chalk.inverse(stringDiff.value)
   }).join('')
 }
