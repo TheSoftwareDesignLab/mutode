@@ -1,8 +1,10 @@
 const test = require('ava')
+const del = require('del')
 
 const Mutode = require('../src/mutode')
 
 process.chdir('./no-tests-module')
+del.sync('.mutode', {force: true})
 
 const opts = {}
 

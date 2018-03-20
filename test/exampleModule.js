@@ -1,6 +1,5 @@
 const test = require('ava')
 const del = require('del')
-const globby = require('globby')
 
 const Mutode = require('../src/mutode')
 
@@ -10,10 +9,7 @@ const SURVIVED = 19
 const DISCARDED = 1
 
 process.chdir('./example-module')
-const toDelete = globby.sync(`.mutode/mutode-*`, {dot: true, onlyDirectories: true})
-for (const path of toDelete) {
-  del.sync(path, {force: true})
-}
+del.sync('.mutode', {force: true})
 
 const opts = {}
 
@@ -31,30 +27,27 @@ test.serial('Example module', async t => {
   await t.throws(mutode.run())
 })
 
-test('Exmaple module - killed', async t => {
+test.serial('Exmaple module - killed', async t => {
   let mutode = new Mutode({
     paths: 'src/killed.js',
-    concurrency: 1
   })
   await mutode.run()
   t.is(mutode.mutants, mutode.killed)
   t.is(mutode.coverage, 100)
 })
 
-test('Exmaple module - survived', async t => {
+test.serial('Exmaple module - survived', async t => {
   let mutode = new Mutode({
     paths: 'src/survived.js',
-    concurrency: 1
   })
   await mutode.run()
   t.is(mutode.mutants, mutode.survived)
   t.is(mutode.coverage, 0)
 })
 
-test('Exmaple module - discarded', async t => {
+test.serial('Exmaple module - discarded', async t => {
   let mutode = new Mutode({
     paths: 'src/discarded.js',
-    concurrency: 1
   })
   await mutode.run()
   t.is(mutode.discarded, DISCARDED)
