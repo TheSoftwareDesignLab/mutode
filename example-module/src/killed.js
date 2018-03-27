@@ -22,7 +22,10 @@ module.exports = {
     a--
     return a
   },
-  condBound (a) {
+  conditionals (a) {
+    if (a === -1) {
+      return 0
+    }
     if (a < 10) {
       return a
     }
@@ -34,6 +37,9 @@ module.exports = {
     }
     if (a > 25) {
       return a * 4
+    }
+    if (a !== 25) {
+      return -1
     }
     return a * 5
   }
