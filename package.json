@@ -1,6 +1,6 @@
 {
   "name": "mutode",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Easy Mutation Testing",
   "main": "src/mutode.js",
   "bin": {
