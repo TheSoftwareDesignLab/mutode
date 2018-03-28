@@ -1,7 +1,7 @@
 {
   "name": "mutode",
   "version": "0.0.8",
-  "description": "Easy Mutation Testing",
+  "description": "Mutation testing for Node.js and JavaScript",
   "main": "src/mutode.js",
   "engines" : { "node" : ">=8.0.0" },
   "bin": {
