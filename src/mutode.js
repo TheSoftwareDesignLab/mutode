@@ -21,14 +21,14 @@ class Mutode {
   /**
    * Create a new Mutode instance
    * @param opts {Object}
-   * @param {array<string>} [opts.paths = ['index.js', 'src/* *\/*.js']] - Glob matched paths or files to mutate
+   * @param {array<string>} [opts.paths = ['index.js', 'src/']] - Glob matched paths or files to mutate
    * @param {number} [opts.concurrency = # of cpu cores] - Number of concurrent workers
    * @param {array<string>} [opts.mutators = All]- Mutators to load (e.g. *deletion*)
    * @returns {Mutode} - Returns an instance of mutode
    */
   constructor ({paths = [], concurrency = os.cpus().length, mutators = ['*']} = {}) {
     if (!Array.isArray(paths)) paths = [paths]
-    if (paths.length === 0) paths = ['index.js', 'src']
+    if (paths.length === 0) paths = ['index.js', 'src/']
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
