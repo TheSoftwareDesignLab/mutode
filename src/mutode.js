@@ -26,8 +26,10 @@ class Mutode {
    * @param {array<string>} [opts.mutators = All]- Mutators to load (e.g. *deletion*)
    * @returns {Mutode} - Returns an instance of mutode
    */
-  constructor ({paths = ['index.js', 'src/**/*.js'], concurrency = os.cpus().length, mutators = ['*']} = {}) {
-    debug('Config:\n\tFile paths %o\n\tConcurrency: %s', paths, concurrency)
+  constructor ({paths = [], concurrency = os.cpus().length, mutators = ['*']} = {}) {
+    if (!Array.isArray(paths)) paths = [paths]
+    if (paths.length === 0) paths = ['index.js', 'src']
+    debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
     if (this.filePaths.length === 0) {
@@ -56,7 +58,7 @@ class Mutode {
     }
     console.log = (s = '') => {
       process.stdout.write(`${s}\n`)
-      this.logFile.write(`${stripAnsi(s.trim())}\n`)
+      this.logFile.write(`${stripAnsi(s.toString().trim())}\n`)
     }
   }
 
@@ -66,6 +68,7 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
+    await this.delete()
     try {
       await this.copyFirst()
       this.mutators = await Mutode.loadMutants(this.mutators)
@@ -204,7 +207,7 @@ class Mutode {
    */
   async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-${this.id}-0`)
+    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.includes('.mutode')})
     console.log('Done\n')
   }
 
@@ -217,7 +220,7 @@ class Mutode {
     console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${this.id}-${i}`)
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.includes('.mutode')})
     }
     console.log('Done\n')
   }
@@ -236,7 +239,7 @@ class Mutode {
    * @returns {Promise} - Promise that resolves once copies have been deleted.
    */
   async delete () {
-    const toDelete = await globby(`.mutode/mutode-${this.id}*`, {dot: true, onlyDirectories: true})
+    const toDelete = await globby(`.mutode/mutode-*`, {dot: true, onlyDirectories: true})
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})

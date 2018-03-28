@@ -1,9 +1,31 @@
 #!/usr/bin/env node
 
+const globby = require('globby')
+const os = require('os')
+
+const argv = require('yargs')
+  .usage('Usage: $0 [options] [paths]')
+  .option('concurrency', {
+    alias: 'c',
+    default: os.cpus().length,
+    describe: 'Concurrency of mutant runners',
+    type: 'number'
+  })
+  .option('mutators', {
+    alias: 'm',
+    default: 'All',
+    describe: 'Mutators to load',
+    type: 'array',
+    choices: globby.sync('../src/mutators', {cwd: __dirname}).map(f => f.split('/').pop().replace('Mutator.js', ''))
+  })
+  .help('h')
+  .alias('h', 'help')
+  .argv
+
+console.log(argv)
+
 const Mutode = require('../src/mutode')
 
-const paths = process.argv.slice(2)
-
-const mutator = new Mutode({paths})
+const mutator = new Mutode({paths: argv._, concurrency: argv.concurrency, mutators: argv.mutators})
 
 mutator.run()
