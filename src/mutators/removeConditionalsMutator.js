@@ -12,15 +12,9 @@ const operators = [
 ]
 
 /**
- * Hola
- * @method
- * @name removeConditionalsMutator
+ * @description Mutates equality conditionals (`==, ===, !=, !==`) to `true` or `false` literals.
+ * @function removeConditionalsMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function removeConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running conditionals boundary mutator on %s', filePath)

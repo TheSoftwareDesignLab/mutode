@@ -19,15 +19,9 @@ const operators = [
 ]
 
 /**
- * Hola
- * @method
- * @name mathMutator
+ * @description Mutates math operators
+ * @function mathMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running math mutator on %s', filePath)

@@ -16,15 +16,9 @@ const operators = [
 ]
 
 /**
- * Hola
- * @method
- * @name negateConditionalsMutator
+ * @description Hola
+ * @function negateConditionalsMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running conditionals boundary mutator on %s', filePath)

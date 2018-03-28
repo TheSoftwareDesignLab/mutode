@@ -6,15 +6,9 @@ const path = require('path')
 
 /**
  * @module MutantRunner
- */
-
-/**
- * Mutant runner
- * @param mutodeInstance {Mutode} - Mutode's instance
- * @param filePath {string} - File path where the mutant is being inserted
- * @param contentToWrite {string} - File's content with the mutant
- * @param log {string} - Mutant's description
- * @returns {function} - Function that runs the mutant in the worker passed by index
+ * @description Runs a given mutant in a free worker, logging one of the possible results (survived, killed or discarded) and the time of execution.
+ *
+ * Execution is done with the `npm test` command inside the worker's directory
  */
 module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
   const debug = Debug(`mutants:${filePath}`)

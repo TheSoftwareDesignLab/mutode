@@ -12,15 +12,9 @@ const operators = [
 ]
 
 /**
- * Hola
- * @method
- * @name conditionalsBoundaryMutator
+ * @description The conditionals boundary mutator replaces the relational operators `<, <=, >, >=` with their boundary counterpart.
+ * @function conditionalsBoundaryMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running conditionals boundary mutator on %s', filePath)

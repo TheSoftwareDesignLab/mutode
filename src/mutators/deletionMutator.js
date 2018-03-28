@@ -5,15 +5,9 @@ const debug = require('debug')('mutode:deletionMutator')
 const mutantRunner = require('../mutantRunner')
 
 /**
- * Mutator that traverses files and deletes single lines.
- * @method
- * @name deletionMutator
+ * @description Mutator that traverses files and deletes single lines.
+ * @function deletionMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function deletionMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running deletion mutator on %s', filePath)

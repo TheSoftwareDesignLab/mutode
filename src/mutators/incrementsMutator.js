@@ -10,15 +10,9 @@ const operators = [
 ]
 
 /**
- * Hola
- * @method
- * @name incrementsMutator
+ * @description Mutates increments (`i++`) / decrements (`i--`) statements to their counterparts.
+ * @function incrementsMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
 module.exports = async function incrementsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running increments mutator on %s', filePath)

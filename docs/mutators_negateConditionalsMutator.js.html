@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>mutators/deletionMutator.js - Documentation</title>
+    <title>mutators/negateConditionalsMutator.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">mutators/deletionMutator.js</h1>
+    <h1 class="page-title">mutators/negateConditionalsMutator.js</h1>
     
 
     
@@ -40,47 +40,53 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
-const chalk = require('chalk')
-const debug = require('debug')('mutode:deletionMutator')
+const debug = require('debug')('mutode:negateConditionalsMutator')
 
 const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
+
+const operators = [
+  ['==', '!='],
+  ['!=', '=='],
+  ['===', '!=='],
+  ['!==', '==='],
+  ['&lt;=', '>'],
+  ['>', '&lt;='],
+  ['>=', '&lt;'],
+  ['&lt;', '>=']
+]
 
 /**
- * @description Mutator that traverses files and deletes single lines.
- * @function deletionMutator
+ * @description Hola
+ * @function negateConditionalsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function deletionMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running deletion mutator on %s', filePath)
-
-  const linesCheck = {}
+module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running conditionals boundary mutator on %s', filePath)
 
   walk.simple(ast, {
-    Statement (node) {
-      if (linesCheck[node.loc.start.line] || node.type === 'BlockStatement' || (node.consequent &amp;&amp; node.consequent.type === 'BlockStatement')) {
-        debug('Skipped line', node.loc.start.line)
-        return
-      }
-      const line = node.loc.start.line
-      const lineContent = lines[line - 1]
+    BinaryExpression (node) {
+      for (const pair of operators) {
+        if (node.operator !== pair[0]) {
+          continue
+        }
+        const line = node.loc.start.line
+        const lineContent = lines[line - 1]
 
-      linesCheck[line] = true
+        const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
+          lineContent.substr(node.loc.start.column, node.loc.end.column - node.loc.start.column).replace(pair[0], pair[1]) +
+          lineContent.substr(node.loc.end.column)
 
-      if (lineContent.trim().startsWith('console.') || lineContent.trim().startsWith('debug(')) {
-        debug('Logging line, continuing')
-        return
+        const mutantId = ++mutodeInstance.mutants
+        const diff = lineDiff(lineContent, mutantLineContent)
+        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}\t`
+        debug(log)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tNCM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+        const linesCopy = lines.slice()
+        linesCopy[line - 1] = mutantLineContent
+        const contentToWrite = linesCopy.join('\n')
+        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
-      if (lineContent.trim().endsWith('{') || lineContent.trim().startsWith('}')) {
-        debug('Code block line, continuing')
-        return
-      }
-
-      const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}:\t\`${chalk.inverse(lineContent.trim())}\`\t`
-      debug(log)
-      mutodeInstance.mutantLog(log)
-      const contentToWrite = lines.slice(0, line - 1).concat(lines.slice(line, lines.length)).join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
     }
   })
 }

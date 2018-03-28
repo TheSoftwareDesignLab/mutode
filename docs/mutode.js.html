@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li>
 </nav>
 
 <div id="main">
@@ -40,6 +40,7 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>const async = require('async')
+const babylon = require('babylon')
 const spawn = require('child_process').spawn
 const debug = require('debug')('mutode')
 const del = require('del')
@@ -49,11 +50,10 @@ const mkdirp = require('mkdirp')
 const os = require('os')
 const path = require('path')
 const copyDir = require('recursive-copy')
-const stripAnsiStream = require('strip-ansi-stream')
+const stripAnsi = require('strip-ansi')
 const {promisify} = require('util')
 
 const readFile = promisify(fs.readFile)
-console.logSame = (t) => process.stdout.write(t)
 
 /**
  * Mutode's main class
@@ -62,19 +62,22 @@ class Mutode {
   /**
    * Create a new Mutode instance
    * @param opts {Object}
-   * @param {array&lt;string>} [opts.paths = ['index.js', 'src/* *\/*.js']] - Glob matched paths or files to mutate
+   * @param {array&lt;string>} [opts.paths = ['index.js', 'src/']] - Glob matched paths or files to mutate
    * @param {number} [opts.concurrency = # of cpu cores] - Number of concurrent workers
    * @param {array&lt;string>} [opts.mutators = All]- Mutators to load (e.g. *deletion*)
    * @returns {Mutode} - Returns an instance of mutode
    */
-  constructor ({paths = ['index.js', 'src/**/*.js'], concurrency = os.cpus().length, mutators = ['*']} = {}) {
-    debug('Config:\n\tFile paths %o\n\tConcurrency: %s', this.filePaths, concurrency)
+  constructor ({paths = [], concurrency = os.cpus().length, mutators = ['*']} = {}) {
+    if (!Array.isArray(paths)) paths = [paths]
+    if (paths.length === 0) paths = ['index.js', 'src/']
+    debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
     if (this.filePaths.length === 0) {
       throw new Error('No files found in the specified paths')
     }
 
+    this.id = Math.random().toString(36).substr(2, 5)
     this.mutators = mutators
     this.concurrency = concurrency
     this.mutants = 0
@@ -86,21 +89,18 @@ class Mutode {
     for (let i = 0; i &lt; this.concurrency; i++) {
       this.workers[i] = true
     }
-    this.ready = false
 
-    const mutantsLogFile = fs.createWriteStream(path.resolve('./.mutode/mutants.log'), {flags: 'w'})
-    this.mutantLog = string => mutantsLogFile.write(string + '\n')
-    const logFile = fs.createWriteStream(path.resolve('./.mutode/mutode.log'), {flags: 'w'})
-    const stream = stripAnsiStream()
-
-    stream.pipe(logFile)
-
-    process.stdout.write = (function (write) {
-      return function (string, encoding, fd) {
-        write.apply(process.stdout, arguments)
-        stream.write(string)
-      }
-    })(process.stdout.write)
+    this.mutantsLogFile = fs.createWriteStream(path.resolve(`.mutode/mutants-${this.id}.log`), {flags: 'w'})
+    this.logFile = fs.createWriteStream(path.resolve(`.mutode/mutode-${this.id}.log`), {flags: 'w'})
+    this.mutantLog = string => this.mutantsLogFile.write(`${stripAnsi(string.trim())}\n`)
+    console.logSame = s => {
+      process.stdout.write(s)
+      this.logFile.write(stripAnsi(s))
+    }
+    console.log = (s = '') => {
+      process.stdout.write(`${s}\n`)
+      this.logFile.write(`${stripAnsi(s.toString().trim())}\n`)
+    }
   }
 
   /**
@@ -109,15 +109,23 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
-    await Mutode.delete()
-    await Mutode.copyFirst()
-    this.mutators = await Mutode.loadMutants(this.mutators)
-    this.timeout = await Mutode.timeCleanTests()
-    this.copied = Mutode.copy(this.concurrency)
-    await new Promise(resolve => {
-      async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
-    })
-    await Mutode.delete()
+    await this.delete()
+    try {
+      await this.copyFirst()
+      this.mutators = await Mutode.loadMutants(this.mutators)
+      this.timeout = await this.timeCleanTests()
+      this.copied = this.copy()
+      await new Promise(resolve => {
+        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
+      })
+    } catch (e) {
+      debug(e)
+      throw e
+    } finally {
+      await this.delete()
+      this.mutantsLogFile.end()
+      this.logFile.end()
+    }
   }
 
   /**
@@ -139,25 +147,26 @@ class Mutode {
       queue.pause()
 
       this.copied.then(() => {
-        console.log('Running mutants for %s', filePath)
+        console.log(`Running mutants for ${filePath}`)
         queue.resume()
       })
 
       const fileContent = (await readFile(filePath)).toString()
       const lines = fileContent.split('\n')
+      const ast = babylon.parse(fileContent)
       for (const mutator of this.mutators) {
         debug('Running mutator %s', mutator.name)
-        await mutator({mutodeInstance: this, filePath, lines, queue})
+        await mutator({mutodeInstance: this, filePath, lines, queue, ast})
       }
       await new Promise(resolve => {
         debug('Adding drain function to queue %d', queue.length())
         queue.drain = () => {
           debug(`Finished %s`, filePath)
           for (let i = 0; i &lt; this.concurrency; i++) {
-            fs.writeFileSync(`.mutode/mutode-${i}/${filePath}`, fileContent) // Reset file to original content
+            fs.writeFileSync(`.mutode/mutode-${this.id}-${i}/${filePath}`, fileContent) // Reset file to original content
           }
           console.log()
-          resolve()
+          setImmediate(resolve)
         }
       })
     }
@@ -167,7 +176,6 @@ class Mutode {
    * Promise handler that returns a function that runs when mutants execution is completed.
    * @private
    * @param resolve {function} - Promise resolve handler
-   * @param reject {function} - Promise reject handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
   done (resolve) {
@@ -175,7 +183,8 @@ class Mutode {
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
-      resolve()
+      console.log()
+      setImmediate(resolve)
     }
   }
 
@@ -197,10 +206,10 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once AUT's test suite execution is completed.
    */
-  static async timeCleanTests () {
+  async timeCleanTests () {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
-    const child = spawn('npm', ['test'], {cwd: path.resolve('.mutode/mutode-0')})
+    const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`)})
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
@@ -237,9 +246,9 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once the copy is created.
    */
-  static async copyFirst () {
+  async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-0`)
+    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.includes('.mutode')})
     console.log('Done\n')
   }
 
@@ -248,13 +257,12 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once the copies are created.
    */
-  static async copy (copies) {
-    console.logSame(`Creating ${copies} extra copies of your module... `)
-    for (let i = 1; i &lt; copies; i++) {
+  async copy () {
+    console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
+    for (let i = 1; i &lt; this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${i}`)
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.includes('.mutode')})
     }
-    this.ready = true
     console.log('Done\n')
   }
 
@@ -271,9 +279,8 @@ class Mutode {
    * @private
    * @returns {Promise} - Promise that resolves once copies have been deleted.
    */
-  static async delete () {
-    const toDelete = await globby('.mutode/mutode-*', {dot: true, onlyDirectories: true})
-    if (toDelete &amp;&amp; toDelete.length === 0) return
+  async delete () {
+    const toDelete = await globby(`.mutode/mutode-*`, {dot: true, onlyDirectories: true})
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})
@@ -299,7 +306,7 @@ module.exports = Mutode
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Mar 08 2018 22:11:55 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 27 2018 21:07:16 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

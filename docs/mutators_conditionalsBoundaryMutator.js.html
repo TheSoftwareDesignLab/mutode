@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li>
 </nav>
 
 <div id="main">
@@ -39,64 +39,51 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const async = require('async')
+            <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
 const debug = require('debug')('mutode:conditionalsBoundaryMutator')
-const jsDiff = require('diff')
-const escapeReg = require('escape-string-regexp')
-const chalk = require('chalk')
 
 const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
+
+const operators = [
+  ['&lt;', '&lt;='],
+  ['&lt;=', '&lt;'],
+  ['>', '>='],
+  ['>=', '>']
+]
 
 /**
- * Hola
- * @method
- * @name conditionalsBoundaryMutator
+ * @description The conditionals boundary mutator replaces the relational operators `&lt;, &lt;=, >, >=` with their boundary counterpart.
+ * @function conditionalsBoundaryMutator
  * @memberOf module:Mutators
- * @param mutodeInstance
- * @param filePath
- * @param lines
- * @param queue
- * @returns {Promise}
  */
-module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, filePath, lines, queue}) {
+module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running conditionals boundary mutator on %s', filePath)
-  return new Promise(resolve => {
-    async.timesSeries(lines.length, async n => {
-      const line = lines[n]
-      const operators = [
-        [' &lt; ', ' &lt;= '],
-        [' &lt;= ', ' &lt; '],
-        [' > ', ' >= '],
-        [' >= ', ' > ']
-      ]
-      const mutants = []
+
+  walk.simple(ast, {
+    BinaryExpression (node) {
       for (const pair of operators) {
-        const reg = new RegExp(`${escapeReg(pair[0])}`, 'g')
-        let matches = null
-        while ((matches = reg.exec(line)) !== null) {
-          mutants.push(
-            line.substr(0, matches.index + matches[0].indexOf(pair[0])) +
-            pair[1] +
-            line.substr(matches.index + matches[0].indexOf(pair[0]) + pair[0].length)
-          )
+        if (node.operator !== pair[0]) {
+          continue
         }
-      }
-      for (const mutant of mutants) {
+        const line = node.loc.start.line
+        const lineContent = lines[line - 1]
+
+        const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
+          lineContent.substr(node.loc.start.column, node.loc.end.column - node.loc.start.column).replace(pair[0], pair[1]) +
+          lineContent.substr(node.loc.end.column)
+
         const mutantId = ++mutodeInstance.mutants
-        const diff = jsDiff.diffChars(line.trim(), mutant.trim()).map(stringDiff => {
-          if (stringDiff.added) return chalk.green(stringDiff.value)
-          else if (stringDiff.removed) return chalk.red(stringDiff.value)
-          else return chalk.gray(stringDiff.value)
-        }).join('')
-        const log = `MUTANT ${mutantId}:\tCB Line ${n + 1}: ${diff}...\t`
+        const diff = lineDiff(lineContent, mutantLineContent)
+        const log = `MUTANT ${mutantId}:\tCBM Line ${line}:\t${diff}\t`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tCB Line ${n + 1}: \`${line.trim()}\` > \`${mutant.trim()}'\`...\t`)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tCBM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()
-        linesCopy[n] = mutant
+        linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
-    }, resolve)
+    }
   })
 }
 </code></pre>
@@ -111,7 +98,7 @@ module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, fi
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Thu Mar 08 2018 22:11:55 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 27 2018 21:07:16 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
