@@ -35,7 +35,7 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
       }
 
       const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}:\t\`${chalk.inverse(lineContent.trim())}\`\t`
+      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}:\t${chalk.inverse(lineContent.trim())}`
       debug(log)
       mutodeInstance.mutantLog(log)
       const contentToWrite = lines.slice(0, line - 1).concat(lines.slice(line, lines.length)).join('\n')

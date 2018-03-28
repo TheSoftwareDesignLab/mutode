@@ -38,7 +38,7 @@ module.exports = async function negateConditionalsMutator ({mutodeInstance, file
 
         const mutantId = ++mutodeInstance.mutants
         const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}\t`
+        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}`
         debug(log)
         mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tNCM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()

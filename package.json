@@ -11,7 +11,7 @@
   },
   "scripts": {
     "jsdoc": "jsdoc -c .jsdoc.json",
-    "test": "MUTODE_TEST=true standard src && nyc ava"
+    "test": "standard src && nyc ava"
   },
   "keywords": [
     "mutation",

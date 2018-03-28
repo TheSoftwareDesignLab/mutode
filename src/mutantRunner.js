@@ -32,13 +32,13 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
         const timeDiff = chalk.gray(`${endTimeMS} ms`)
         clearTimeout(timeout)
         if (code === 0) {
-          console.log(`${log} ${chalk.bgRed('survived')} ${timeDiff}`)
+          console.log(`${log}\t${chalk.bgRed('survived')} ${timeDiff}`)
           mutodeInstance.survived++
         } else if (signal) {
-          console.log(`${log} ${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
+          console.log(`${log}\t${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
           mutodeInstance.discarded++
         } else {
-          console.log(`${log} ${chalk.bgGreen('killed')} ${timeDiff}`)
+          console.log(`${log}\t${chalk.bgGreen('killed')} ${timeDiff}`)
           mutodeInstance.killed++
         }
         // console.log('exit', code)
