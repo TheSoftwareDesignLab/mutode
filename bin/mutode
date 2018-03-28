@@ -13,13 +13,13 @@ const argv = require('yargs')
   })
   .option('mutators', {
     alias: 'm',
-    default: 'All',
-    describe: 'Mutators to load',
+    describe: 'Mutators to load (space separated)',
     type: 'array',
     choices: globby.sync('../src/mutators', {cwd: __dirname}).map(f => f.split('/').pop().replace('Mutator.js', ''))
   })
   .help('h')
   .alias('h', 'help')
+  .alias('v', 'version')
   .argv
 
 console.log(argv)
