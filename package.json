@@ -3,6 +3,7 @@
   "version": "0.0.8",
   "description": "Easy Mutation Testing",
   "main": "src/mutode.js",
+  "engines" : { "node" : ">=8.0.0" },
   "bin": {
     "mutode": "./bin/mutode"
   },
