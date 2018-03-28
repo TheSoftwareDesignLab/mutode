@@ -8,7 +8,7 @@
   },
   "scripts": {
     "jsdoc": "jsdoc -c .jsdoc.json",
-    "test": "standard src && nyc ava"
+    "test": "MUTODE_TEST=true standard src && nyc ava"
   },
   "keywords": [
     "mutation",
@@ -34,7 +34,8 @@
     "globby": "^8.0.1",
     "mkdirp": "^0.5.1",
     "recursive-copy": "^2.0.9",
-    "strip-ansi": "^4.0.0"
+    "strip-ansi": "^4.0.0",
+    "yargs": "^9.0.1"
   },
   "devDependencies": {
     "ava": "^0.25.0",
