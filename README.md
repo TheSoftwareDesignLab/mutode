@@ -19,7 +19,7 @@ With `npx`:
 npx mutode [options] [paths]
 ```
 
-With an package.json script:
+With a package.json script:
 
 ```
 {
