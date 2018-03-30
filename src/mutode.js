@@ -32,6 +32,7 @@ class Mutode {
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
+    debug('Globbed files %o', this.filePaths)
     if (this.filePaths.length === 0) {
       throw new Error('No files found in the specified paths')
     }
