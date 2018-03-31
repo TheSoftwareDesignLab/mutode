@@ -28,6 +28,7 @@ class Mutode {
    */
   constructor ({paths = [], concurrency = os.cpus().length, mutators = ['*']} = {}) {
     if (!Array.isArray(paths)) paths = [paths]
+    if (!Array.isArray(mutators)) mutators = [mutators]
     if (paths.length === 0) paths = ['index.js', 'src/']
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
@@ -119,14 +120,23 @@ class Mutode {
         await mutator({mutodeInstance: this, filePath, lines, queue, ast})
       }
       await new Promise(resolve => {
-        debug('Adding drain function to queue %d', queue.length())
-        queue.drain = () => {
-          debug(`Finished %s`, filePath)
+        const resolveWhenDone = () => {
           for (let i = 0; i < this.concurrency; i++) {
             fs.writeFileSync(`.mutode/mutode-${this.id}-${i}/${filePath}`, fileContent) // Reset file to original content
           }
           console.log()
           setImmediate(resolve)
+        }
+
+        if (queue.length() === 0) {
+          return this.copied.then(() => {
+            resolveWhenDone()
+          })
+        }
+        debug('Adding drain function to queue %d', queue.length())
+        queue.drain = () => {
+          debug(`Finished %s`, filePath)
+          resolveWhenDone()
         }
       })
     }
@@ -141,7 +151,7 @@ class Mutode {
   done (resolve) {
     return () => {
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
-      this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
+      this.coverage = +(this.killed / (this.mutants || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
       console.log()
       setImmediate(resolve)
