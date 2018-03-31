@@ -21,7 +21,7 @@ assert.strictEqual(killed.increments(1), 1)
 assert.strictEqual(killed.increments(10), 10)
 assert.strictEqual(survived.increments(1), undefined)
 
-// Conditionals boundary
+// Conditionals
 assert.strictEqual(killed.conditionals(-1), 0)
 assert.strictEqual(killed.conditionals(5), 5)
 assert.strictEqual(killed.conditionals(10), 20)
@@ -32,6 +32,11 @@ assert.strictEqual(killed.conditionals(27), 108)
 assert.strictEqual(killed.conditionals(25), 125)
 assert.strictEqual(killed.conditionals(24), -1)
 assert.strictEqual(survived.conditionals(33), 33)
+
+// Invert negatives
+assert.strictEqual(killed.negatives(-1), 1)
+assert.strictEqual(killed.negatives(0), 0)
+assert.strictEqual(killed.negatives(1), -1)
 
 // Discarded
 assert.strictEqual(discarded, true)

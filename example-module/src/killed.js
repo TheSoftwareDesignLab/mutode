@@ -42,5 +42,8 @@ module.exports = {
       return -1
     }
     return a * 5
+  },
+  negatives (a) {
+    return -a
   }
 }
