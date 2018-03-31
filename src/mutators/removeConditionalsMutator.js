@@ -17,7 +17,7 @@ const operators = [
  * @memberOf module:Mutators
  */
 module.exports = async function removeConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running conditionals boundary mutator on %s', filePath)
+  debug('Running remove conditionals mutator on %s', filePath)
 
   walk.simple(ast, {
     BinaryExpression (node) {

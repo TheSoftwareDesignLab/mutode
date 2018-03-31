@@ -21,7 +21,7 @@ const operators = [
  * @memberOf module:Mutators
  */
 module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running conditionals boundary mutator on %s', filePath)
+  debug('Running negate conditionals mutator on %s', filePath)
 
   walk.simple(ast, {
     BinaryExpression (node) {
