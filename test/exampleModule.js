@@ -5,7 +5,7 @@ const Mutode = require('../src/mutode')
 
 const MUTANTS = 74
 const KILLED = 54
-const SURVIVED = 19
+const SURVIVED = 4
 const DISCARDED = 1
 
 process.chdir('./example-module')

@@ -1,6 +1,6 @@
 module.exports = {
   deletion () {
-    console.log('returning true')
+    console.log()
     return true
   },
   math (n, m) {
@@ -45,5 +45,19 @@ module.exports = {
   },
   negatives (a) {
     return -a
+  },
+  returnValues: {
+    numeric () {
+      return 7
+    },
+    numericZero () {
+      return 0
+    },
+    booleanTrue () {
+      return true
+    },
+    booleanFalse () {
+      return false
+    }
   }
 }
