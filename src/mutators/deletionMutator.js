@@ -5,7 +5,7 @@ const debug = require('debug')('mutode:deletionMutator')
 const mutantRunner = require('../mutantRunner')
 
 /**
- * @description Mutator that traverses files and deletes single lines.
+ * @description Mutator that traverses files and deletes single line statements.
  * @function deletionMutator
  * @memberOf module:Mutators
  */

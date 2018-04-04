@@ -5,7 +5,7 @@ const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
 /**
- * @description Mutates `-a` to `a`
+ * @description Mutates return values. Negates booleans. Numbers > 0 are mutated to 0, 0 is mutated to 1.
  * @function returnValuesMutator
  * @memberOf module:Mutators
  */
