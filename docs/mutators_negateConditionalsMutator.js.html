@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.invertNegativesMutator">invertNegativesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.returnValuesMutator">returnValuesMutator</a></span></li>
 </nav>
 
 <div id="main">
@@ -62,7 +62,7 @@ const operators = [
  * @memberOf module:Mutators
  */
 module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running conditionals boundary mutator on %s', filePath)
+  debug('Running negate conditionals mutator on %s', filePath)
 
   walk.simple(ast, {
     BinaryExpression (node) {
@@ -79,7 +79,7 @@ module.exports = async function negateConditionalsMutator ({mutodeInstance, file
 
         const mutantId = ++mutodeInstance.mutants
         const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}\t`
+        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}`
         debug(log)
         mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tNCM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()
@@ -102,7 +102,7 @@ module.exports = async function negateConditionalsMutator ({mutodeInstance, file
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 27 2018 21:15:25 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 04 2018 18:14:54 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

@@ -24,7 +24,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li>
+    <li class="nav-link nav-home-link"><a href="index.html">Home</a></li><li class="nav-heading">Classes</li><li class="nav-heading"><span class="nav-item-type type-class">C</span><span class="nav-item-name"><a href="Mutode.html">Mutode</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="Mutode.html#run">run</a></span></li><li class="nav-heading">Modules</li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-MutantRunner.html">MutantRunner</a></span></li><li class="nav-heading"><span class="nav-item-type type-module">M</span><span class="nav-item-name"><a href="module-Mutators.html">Mutators</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.conditionalsBoundaryMutator">conditionalsBoundaryMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.deletionMutator">deletionMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.incrementsMutator">incrementsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.invertNegativesMutator">invertNegativesMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.mathMutator">mathMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.negateConditionalsMutator">negateConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.removeConditionalsMutator">removeConditionalsMutator</a></span></li><li class="nav-item"><span class="nav-item-type type-function">F</span><span class="nav-item-name"><a href="module-Mutators.html#.returnValuesMutator">returnValuesMutator</a></span></li>
 </nav>
 
 <div id="main">
@@ -69,10 +69,12 @@ class Mutode {
    */
   constructor ({paths = [], concurrency = os.cpus().length, mutators = ['*']} = {}) {
     if (!Array.isArray(paths)) paths = [paths]
+    if (!Array.isArray(mutators)) mutators = [mutators]
     if (paths.length === 0) paths = ['index.js', 'src/']
     debug('Config:\n\tFile paths %o\n\tConcurrency: %s\n\tMutators: %s', paths, concurrency, mutators)
     Mutode.mkdir()
     this.filePaths = globby.sync(paths)
+    debug('Globbed files %o', this.filePaths)
     if (this.filePaths.length === 0) {
       throw new Error('No files found in the specified paths')
     }
@@ -159,14 +161,23 @@ class Mutode {
         await mutator({mutodeInstance: this, filePath, lines, queue, ast})
       }
       await new Promise(resolve => {
-        debug('Adding drain function to queue %d', queue.length())
-        queue.drain = () => {
-          debug(`Finished %s`, filePath)
+        const resolveWhenDone = () => {
           for (let i = 0; i &lt; this.concurrency; i++) {
             fs.writeFileSync(`.mutode/mutode-${this.id}-${i}/${filePath}`, fileContent) // Reset file to original content
           }
           console.log()
           setImmediate(resolve)
+        }
+
+        if (queue.length() === 0) {
+          return this.copied.then(() => {
+            resolveWhenDone()
+          })
+        }
+        debug('Adding drain function to queue %d', queue.length())
+        queue.drain = () => {
+          debug(`Finished %s`, filePath)
+          resolveWhenDone()
         }
       })
     }
@@ -181,7 +192,7 @@ class Mutode {
   done (resolve) {
     return () => {
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
-      this.coverage = +(this.killed / this.mutants * 100).toFixed(2)
+      this.coverage = +(this.killed / (this.mutants || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
       console.log()
       setImmediate(resolve)
@@ -306,7 +317,7 @@ module.exports = Mutode
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Mar 27 2018 21:15:25 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Apr 04 2018 18:14:54 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>

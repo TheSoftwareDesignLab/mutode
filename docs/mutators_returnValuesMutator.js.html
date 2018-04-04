@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>mutantRunner.js - Documentation</title>
+    <title>mutators/returnValuesMutator.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">mutantRunner.js</h1>
+    <h1 class="page-title">mutators/returnValuesMutator.js</h1>
     
 
     
@@ -39,54 +39,55 @@
     
     <section>
         <article>
-            <pre class="prettyprint source linenums"><code>const chalk = require('chalk')
-const spawn = require('child_process').spawn
-const Debug = require('debug')
-const fs = require('fs')
-const path = require('path')
+            <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
+const debug = require('debug')('mutode:incrementsMutator')
+
+const mutantRunner = require('../mutantRunner')
+const lineDiff = require('../util/lineDiff')
 
 /**
- * @module MutantRunner
- * @description Runs a given mutant in a free worker, logging one of the possible results (survived, killed or discarded) and the time of execution.
- *
- * Execution is done with the `npm test` command inside the worker's directory
+ * @description Mutates return values. Negates booleans. Numbers > 0 are mutated to 0, 0 is mutated to 1.
+ * @function returnValuesMutator
+ * @memberOf module:Mutators
  */
-module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
-  const debug = Debug(`mutants:${filePath}`)
-  return async index => {
-    await new Promise(resolve => {
-      const startTime = process.hrtime()
-      fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
-      const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
+module.exports = async function returnValuesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running return values mutator on %s', filePath)
 
-      child.stderr.on('data', data => {
-        debug(data.toString())
-      })
-
-      const timeout = setTimeout(() => {
-        child.kill('SIGKILL')
-      }, mutodeInstance.timeout).unref()
-
-      child.on('exit', (code, signal) => {
-        const endTime = process.hrtime(startTime)
-        const endTimeMS = (endTime[0] * 1e3 + endTime[1] / 1e6).toFixed(0)
-        const timeDiff = chalk.gray(`${endTimeMS} ms`)
-        clearTimeout(timeout)
-        if (code === 0) {
-          console.log(`${log}\t${chalk.bgRed('survived')} ${timeDiff}`)
-          mutodeInstance.survived++
-        } else if (signal) {
-          console.log(`${log}\t${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
-          mutodeInstance.discarded++
-        } else {
-          console.log(`${log}\t${chalk.bgGreen('killed')} ${timeDiff}`)
-          mutodeInstance.killed++
+  walk.simple(ast, {
+    ReturnStatement (node) {
+      const line = node.loc.start.line
+      const lineContent = lines[line - 1]
+      let mutantLineContent = lineContent
+      switch (node.argument.type) {
+        case 'BooleanLiteral': {
+          let newReturnValue = !node.argument.value
+          mutantLineContent = lineContent.substr(0, node.argument.loc.start.column) +
+            newReturnValue +
+            lineContent.substr(node.argument.loc.end.column)
+          break
         }
-        // console.log('exit', code)
-        resolve()
-      })
-    })
-  }
+        case 'NumericLiteral': {
+          let newReturnValue = node.argument.value === 0 ? 1 : 0
+          mutantLineContent = lineContent.substr(0, node.argument.loc.start.column) +
+            newReturnValue +
+            lineContent.substr(node.argument.loc.end.column)
+          break
+        }
+        default:
+          return
+      }
+
+      const mutantId = ++mutodeInstance.mutants
+      const diff = lineDiff(lineContent, mutantLineContent)
+      const log = `MUTANT ${mutantId}:\tRVM Line ${line}:\t${diff}...`
+      debug(log)
+      mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tRVM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+      const linesCopy = lines.slice()
+      linesCopy[line - 1] = mutantLineContent
+      const contentToWrite = linesCopy.join('\n')
+      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+    }
+  })
 }
 </code></pre>
         </article>
