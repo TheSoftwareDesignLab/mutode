@@ -22,12 +22,19 @@ npm i -D mutode
 
 ## Use
 
-With `npx`:
+Globally:
+
+```sh
+mutode [options] [paths]
+```
+
+Locally with `npx`:
+
 ```sh
 npx mutode [options] [paths]
 ```
 
-With a package.json script:
+Locally with a package.json script:
 
 ```
 {
