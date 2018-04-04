@@ -22,8 +22,6 @@ const argv = require('yargs')
   .alias('v', 'version')
   .argv
 
-console.log(argv)
-
 const Mutode = require('../src/mutode')
 
 const mutator = new Mutode({paths: argv._, concurrency: argv.concurrency, mutators: argv.mutators})
