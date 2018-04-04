@@ -4,12 +4,20 @@ Mutation testing for Node.js and JavaScript. **Currently being built**
 
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg?style=flat-square)](https://standardjs.com)
 
+**Requires Node 8+**
+
 ## Install
+
+Globally:
+
+```sh
+npm i -g mutode
+```
+
+Locally as a dev dependency:
 
 ```sh
 npm i -D mutode
-or
-npm install --save-dev mutode
 ```
 
 ## Use
