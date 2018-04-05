@@ -228,6 +228,7 @@ class Mutode {
    * @returns {Promise} - Promise that resolves once the copies are created.
    */
   async copy () {
+    if (this.concurrency === 1) return
     console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)

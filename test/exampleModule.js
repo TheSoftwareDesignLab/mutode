@@ -57,11 +57,11 @@ test.serial('Exmaple module - discarded', async t => {
 })
 
 test.serial('Exmaple module - no mutants', async t => {
-  const testOpts = Object.assign({
+  let mutode = new Mutode({
     paths: 'src/discarded.js',
-    mutators: 'invertNegatives'
-  }, opts)
-  let mutode = new Mutode(testOpts)
+    mutators: 'invertNegatives',
+    concurrency: 1
+  })
   await mutode.run()
   t.is(mutode.mutants, 0)
 })
