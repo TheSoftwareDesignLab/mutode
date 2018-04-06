@@ -38,7 +38,8 @@ class Mutode {
       throw new Error('No files found in the specified paths')
     }
 
-    this.id = Math.random().toString(36).substr(2, 5)
+    const date = new Date()
+    this.id = '' + date.getMonth() + date.getDay() + date.getHours() + date.getMinutes() + date.getSeconds()
     this.mutators = mutators
     this.concurrency = concurrency
     this.mutants = 0
@@ -251,7 +252,7 @@ class Mutode {
    * @returns {Promise} - Promise that resolves once copies have been deleted.
    */
   async delete () {
-    const toDelete = await globby(`.mutode/mutode-*`, {dot: true, onlyDirectories: true})
+    const toDelete = await globby(`.mutode/*`, {dot: true, onlyDirectories: true})
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})
