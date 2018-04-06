@@ -39,6 +39,17 @@ assert.strictEqual(killed.returnValues.numeric(), 7)
 assert.strictEqual(killed.returnValues.numericZero(), 0)
 assert.strictEqual(killed.returnValues.booleanTrue(), true)
 assert.strictEqual(killed.returnValues.booleanFalse(), false)
+assert.strictEqual(killed.returnValues.string(), 'hello')
+assert.strictEqual(killed.returnValues.emptyString(), '')
+
+// Switch cases
+assert.strictEqual(killed.switchCases(0), 1)
+assert.strictEqual(killed.switchCases(1), 2)
+assert.strictEqual(killed.switchCases('a'), 3)
+assert.strictEqual(killed.switchCases(''), 4)
+assert.strictEqual(killed.switchCases(true), 5)
+assert.strictEqual(killed.switchCases(false), 6)
+assert.strictEqual(killed.switchCases(null), 10)
 
 // Discarded
 assert.strictEqual(discarded, true)

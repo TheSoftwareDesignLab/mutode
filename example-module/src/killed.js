@@ -58,6 +58,30 @@ module.exports = {
     },
     booleanFalse () {
       return false
+    },
+    string () {
+      return 'hello'
+    },
+    emptyString () {
+      return ''
+    }
+  },
+  switchCases (a) {
+    switch (a) {
+      case 0:
+        return 1
+      case 1:
+        return 2
+      case 'a':
+        return 3
+      case '':
+        return 4
+      case true:
+        return 5
+      case false:
+        return 6
+      default:
+        return 10
     }
   }
 }
