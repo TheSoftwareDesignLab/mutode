@@ -54,7 +54,10 @@ Usage: mutode [options] [paths]
 
 Options:
   --concurrency, -c  Concurrency of mutant runners         [number] [default: 4]
-  --mutators, -m     Mutators to load (space separated)      [array] [choices: ]
+  --mutators, -m     Specific mutators to load (space separated)
+             [array] [choices: "conditionalsBoundary", "deletion", "increments",
+          "invertNegatives", "math", "negateConditionals", "removeConditionals",
+                                                  "returnValues", "switchCases"]
   -h, --help         Show help                                         [boolean]
   -v, --version      Show version number                               [boolean]
 ```

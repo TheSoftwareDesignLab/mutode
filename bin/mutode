@@ -13,9 +13,9 @@ const argv = require('yargs')
   })
   .option('mutators', {
     alias: 'm',
-    describe: 'Mutators to load (space separated)',
+    describe: 'Specific mutators to load (space separated)',
     type: 'array',
-    choices: globby.sync('../src/mutators', {cwd: __dirname}).map(f => f.split('/').pop().replace('Mutator.js', ''))
+    choices: globby.sync('../src/mutators/*', {cwd: __dirname}).map(f => f.split('/').pop().replace('Mutator.js', ''))
   })
   .help('h')
   .alias('h', 'help')
