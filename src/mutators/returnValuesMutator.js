@@ -36,7 +36,7 @@ module.exports = async function returnValuesMutator ({mutodeInstance, filePath, 
           break
         }
         case 'StringLiteral': {
-          const newReturnValue = node.argument.value.length === 0 ? Math.random().toString(36).replace(/[^a-z]+/g, '') : ''
+          const newReturnValue = node.argument.value.length === 0 ? `'${Math.random().toString(36).replace(/[^a-z]+/g, '')}'` : node.argument.extra.raw.replace(node.argument.value, '')
           mutantLineContent = lineContent.substr(0, node.argument.loc.start.column) +
             newReturnValue +
             lineContent.substr(node.argument.loc.end.column)
