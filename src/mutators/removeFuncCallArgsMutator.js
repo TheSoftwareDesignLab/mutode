@@ -9,7 +9,7 @@ const lineDiff = require('../util/lineDiff')
  * @function removeFuncCallArgsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeFuncCallArgsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running remove function call arguments mutator on %s', filePath)
 
   walk.simple(ast, {

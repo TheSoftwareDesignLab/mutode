@@ -6,10 +6,10 @@ const lineDiff = require('../util/lineDiff')
 
 /**
  * @description Mutates function declarations removing parameters
- * @function removeFunctionParametersMutator
+ * @function removeFuncDeclarationParamsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeFuncDeclarationParamsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running remove function declaration parameters mutator on %s', filePath)
 
   walk.simple(ast, {

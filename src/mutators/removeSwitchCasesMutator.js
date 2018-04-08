@@ -8,7 +8,7 @@ const mutantRunner = require('../mutantRunner')
  * @function removeSwitchCasesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeSwitchCasesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running remove switch cases mutator on %s', filePath)
 
   walk.simple(ast, {

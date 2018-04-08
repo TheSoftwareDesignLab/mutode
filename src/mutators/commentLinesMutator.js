@@ -6,10 +6,10 @@ const mutantRunner = require('../mutantRunner')
 
 /**
  * @description Mutator that traverses files and comments single line statements.
- * @function lineCommenterMutator
+ * @function commentLinesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function commentLinesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running line commenter mutator on %s', filePath)
 
   const linesCheck = {}
