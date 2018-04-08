@@ -34,10 +34,6 @@ module.exports = async function commentLinesMutator ({mutodeInstance, filePath, 
         debug('Logging line, continuing')
         return
       }
-      if (lineContent.trim().endsWith('{') || lineContent.trim().startsWith('}')) {
-        debug('Code block line, continuing')
-        return
-      }
 
       const mutantId = ++mutodeInstance.mutants
       const log = `MUTANT ${mutantId}:\tCLM Commented line ${line}:\t${chalk.inverse(lineContent.trim())}`
