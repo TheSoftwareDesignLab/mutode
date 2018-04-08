@@ -51,6 +51,9 @@ assert.strictEqual(killed.switchCases(true), 5)
 assert.strictEqual(killed.switchCases(false), 6)
 assert.strictEqual(killed.switchCases(null), 10)
 
+// Functions
+assert.strictEqual(killed.functions(), 1)
+
 // Discarded
 assert.strictEqual(discarded, true)
 

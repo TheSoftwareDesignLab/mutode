@@ -83,5 +83,12 @@ module.exports = {
       default:
         return 10
     }
+  },
+  functions () {
+    return a(1)
+
+    function a (p1) {
+      return p1
+    }
   }
 }
