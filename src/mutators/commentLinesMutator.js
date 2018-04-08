@@ -5,19 +5,24 @@ const debug = require('debug')('mutode:deletionMutator')
 const mutantRunner = require('../mutantRunner')
 
 /**
- * @description Mutator that traverses files and deletes single line statements.
- * @function deletionMutator
+ * @description Mutator that traverses files and comments single line statements.
+ * @function lineCommenterMutator
  * @memberOf module:Mutators
  */
-module.exports = async function deletionMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running deletion mutator on %s', filePath)
+module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running line commenter mutator on %s', filePath)
 
   const linesCheck = {}
 
   walk.simple(ast, {
     Statement (node) {
-      if (linesCheck[node.loc.start.line] || node.type === 'BlockStatement' || (node.consequent && node.consequent.type === 'BlockStatement')) {
-        debug('Skipped line', node.loc.start.line)
+      debug(node)
+      if (node.loc.start.line !== node.loc.end.line) {
+        debug('Multi line statement, continuing')
+        return
+      }
+      if (linesCheck[node.loc.start.line]) {
+        debug('Already checked line, continuing')
         return
       }
       const line = node.loc.start.line
@@ -35,10 +40,12 @@ module.exports = async function deletionMutator ({mutodeInstance, filePath, line
       }
 
       const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tDM Deleted line ${line}:\t${chalk.inverse(lineContent.trim())}`
+      const log = `MUTANT ${mutantId}:\tCLM Commented line ${line}:\t${chalk.inverse(lineContent.trim())}`
       debug(log)
       mutodeInstance.mutantLog(log)
-      const contentToWrite = lines.slice(0, line - 1).concat(lines.slice(line, lines.length)).join('\n')
+      const linesCopy = lines.slice()
+      linesCopy[line - 1] = `// ${lineContent}`
+      const contentToWrite = linesCopy.join('\n')
       queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
     }
   })
