@@ -13,7 +13,6 @@ module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) 
 
   walk.simple(ast, {
     SwitchCase (node) {
-      debug(node)
       const line = node.loc.start.line
       const caseContent = node.test ? node.test.extra ? node.test.extra.raw : `${node.test.value}` : 'default'
 

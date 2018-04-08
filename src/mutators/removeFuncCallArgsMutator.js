@@ -14,7 +14,6 @@ module.exports = async function ({mutodeInstance, filePath, lines, queue, ast}) 
 
   walk.simple(ast, {
     CallExpression (functionNode) {
-      debug(functionNode)
       for (const node of functionNode.arguments) {
         const line = node.loc.start.line
         const lineContent = lines[line - 1]
