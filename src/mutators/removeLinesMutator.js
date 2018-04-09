@@ -33,6 +33,10 @@ module.exports = async function removeLinesMutator ({mutodeInstance, filePath, l
         debug('Logging line, continuing')
         return
       }
+      if (/^module.exports.?=/.test(lineContent) || /^exports.?=/.test(lineContent)) {
+        debug('Exports line, continuing')
+        return
+      }
       if (lineContent.trim().endsWith('{')) {
         debug('Code block line, continuing')
         return

@@ -14,7 +14,7 @@ module.exports = async function removeObjPropsMutator ({mutodeInstance, filePath
 
   walk.simple(ast, {
     ObjectProperty (node) {
-      const propertyName = node.key ? node.key.name : '?'
+      const propertyName = node.key.name
 
       let contentToWrite = ''
       let log = ''

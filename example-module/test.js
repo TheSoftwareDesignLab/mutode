@@ -65,4 +65,4 @@ assert.deepEqual(killed.objects(false), {a: 3, b: [4, 5]})
 assert.strictEqual(discarded, true)
 
 // Survived
-assert.strictEqual(survived(), undefined)
+assert.strictEqual(survived, undefined)
