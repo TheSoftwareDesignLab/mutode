@@ -1,6 +1,5 @@
 module.exports = {
   deletion () {
-    console.log()
     return true
   },
   math (n, m) {
