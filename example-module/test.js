@@ -52,7 +52,14 @@ assert.strictEqual(killed.switchCases(false), 6)
 assert.strictEqual(killed.switchCases(null), 10)
 
 // Functions
-assert.strictEqual(killed.functions(), 1)
+assert.strictEqual(killed.functions(), 12)
+
+// Arrays
+assert.deepEqual(killed.arrays(), [1, 2, 3, 4, 5, {a: 6, b: 7}])
+
+// Objects
+assert.deepEqual(killed.objects(true), {a: 1, b: 2})
+assert.deepEqual(killed.objects(false), {a: 3, b: [4, 5]})
 
 // Discarded
 assert.strictEqual(discarded, true)

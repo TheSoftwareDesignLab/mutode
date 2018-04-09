@@ -84,10 +84,36 @@ module.exports = {
     }
   },
   functions () {
-    return a(1)
-
-    function a (p1) {
-      return p1
+    const b = function () {
+      return 2
     }
+
+    function a (p1, p2, p3) {
+      return p1 * p2 * p3
+    }
+
+    return a(1, 2, 3) * b()
+  },
+  arrays () {
+    const a = [1,2,3]
+    const b = [
+      4,
+      5,
+      {
+        a: 6,
+        b: 7
+      }
+    ]
+    return a.concat(b)
+  },
+  objects (bool) {
+    const a = { a: 1, b: 2}
+    const b = {
+      a: 3,
+      b: [
+        4, 5
+      ]
+    }
+    return bool ? a : b
   }
 }
