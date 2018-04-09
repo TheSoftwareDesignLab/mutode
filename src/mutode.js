@@ -38,8 +38,7 @@ class Mutode {
       throw new Error('No files found in the specified paths')
     }
 
-    const date = new Date()
-    this.id = '' + date.getMonth() + date.getDay() + date.getHours() + date.getMinutes() + date.getSeconds()
+    this.id = `${Math.floor(Date.now() / 10000)}`
     this.mutators = mutators
     this.concurrency = concurrency
     this.mutants = 0
