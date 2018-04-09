@@ -17,7 +17,7 @@ module.exports = async function removeSwitchCasesMutator ({mutodeInstance, fileP
       const caseContent = node.test ? node.test.extra ? node.test.extra.raw : `${node.test.value}` : 'default'
 
       const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tRSCM Removed case ${caseContent}`
+      const log = `MUTANT ${mutantId}:\tRSCM Lines ${node.loc.start.line}-${node.loc.end.line}: Commented case ${caseContent}`
       debug(log)
       mutodeInstance.mutantLog(log)
       const linesCopy = lines.slice()
