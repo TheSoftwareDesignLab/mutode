@@ -18,10 +18,14 @@ module.exports = async function removeFuncDeclarationParamsMutator ({mutodeInsta
         const line = node.loc.start.line
         const lineContent = lines[line - 1]
 
+        let trimmed = false
         let start = lineContent.substr(0, node.loc.start.column)
-        if (start.trim().endsWith(',')) start = start.substr(0, start.lastIndexOf(','))
+        if (start.trim().endsWith(',')) {
+          start = start.substr(0, start.lastIndexOf(','))
+          trimmed = true
+        }
         let end = lineContent.substr(node.loc.end.column)
-        if (end.startsWith(',')) end = end.substr(1).trim()
+        if (!trimmed && end.startsWith(',')) end = end.substr(1).trim()
         const mutantLineContent = start + end
 
         const mutantId = ++mutodeInstance.mutants
