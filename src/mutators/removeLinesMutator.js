@@ -6,11 +6,11 @@ const mutantRunner = require('../mutantRunner')
 
 /**
  * @description Mutator that traverses files and comments single line statements.
- * @function commentLinesMutator
+ * @function removeLinesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function commentLinesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running line commenter mutator on %s', filePath)
+module.exports = async function removeLinesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running remove lines mutator on %s', filePath)
 
   const linesCheck = {}
 
@@ -40,7 +40,7 @@ module.exports = async function commentLinesMutator ({mutodeInstance, filePath, 
       }
 
       const mutantId = ++mutodeInstance.mutants
-      const log = `MUTANT ${mutantId}:\tCLM Commented line ${line}:\t${chalk.inverse(lineContent.trim())}`
+      const log = `MUTANT ${mutantId}:\tRLM Commented line ${line}:\t${chalk.inverse(lineContent.trim())}`
       debug(log)
       mutodeInstance.mutantLog(log)
       const linesCopy = lines.slice()
