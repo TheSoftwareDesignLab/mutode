@@ -12,7 +12,7 @@ const operators = [
 ]
 
 /**
- * @description Mutates equality conditionals (`==, ===, !=, !==`) to `true` or `false` literals.
+ * @description Mutates equality conditionals (`==, ===, !=, !==`) to both `true` and `false` literals
  * @function removeConditionalsMutator
  * @memberOf module:Mutators
  */

@@ -1,11 +1,11 @@
 const walk = require('babylon-walk')
 const chalk = require('chalk')
-const debug = require('debug')('mutode:deletionMutator')
+const debug = require('debug')('mutode:removeLinesMutator')
 
 const mutantRunner = require('../mutantRunner')
 
 /**
- * @description Mutator that traverses files and comments single line statements.
+ * @description Mutator that traverses files and removes single line statements
  * @function removeLinesMutator
  * @memberOf module:Mutators
  */
@@ -16,7 +16,6 @@ module.exports = async function removeLinesMutator ({mutodeInstance, filePath, l
 
   walk.simple(ast, {
     Statement (node) {
-      debug(node)
       if (node.loc.start.line !== node.loc.end.line) {
         debug('Multi line statement, continuing')
         return

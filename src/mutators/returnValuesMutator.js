@@ -1,5 +1,5 @@
 const walk = require('babylon-walk')
-const debug = require('debug')('mutode:incrementsMutator')
+const debug = require('debug')('mutode:returnValuesMutator')
 
 const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')

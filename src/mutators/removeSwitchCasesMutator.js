@@ -1,10 +1,10 @@
 const walk = require('babylon-walk')
-const debug = require('debug')('mutode:removeFunctionParametersMutator')
+const debug = require('debug')('mutode:removeSwitchCasesMutator')
 
 const mutantRunner = require('../mutantRunner')
 
 /**
- * @description Mutates switch removing cases
+ * @description Mutates switch statement by removing cases
  * @function removeSwitchCasesMutator
  * @memberOf module:Mutators
  */
