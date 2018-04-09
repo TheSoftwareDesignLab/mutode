@@ -1,6 +1,6 @@
 {
   "name": "mutode",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Mutation testing for Node.js and JavaScript",
   "main": "src/mutode.js",
   "engines": {
