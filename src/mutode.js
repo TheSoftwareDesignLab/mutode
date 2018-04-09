@@ -179,7 +179,7 @@ class Mutode {
   async timeCleanTests () {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
-    const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`)})
+    const child = spawn(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`)})
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {

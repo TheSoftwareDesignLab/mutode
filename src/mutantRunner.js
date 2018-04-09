@@ -16,7 +16,7 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
     await new Promise(resolve => {
       const startTime = process.hrtime()
       fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
-      const child = spawn('npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
+      const child = spawn(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
 
       child.stderr.on('data', data => {
         debug(data.toString())
