@@ -218,7 +218,7 @@ class Mutode {
    */
   async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.includes('.mutode')})
+    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.startsWith('.')})
     console.log('Done\n')
   }
 
@@ -232,7 +232,7 @@ class Mutode {
     console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.includes('.mutode')})
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.startsWith('.')})
     }
     console.log('Done\n')
   }
