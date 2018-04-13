@@ -15,18 +15,6 @@ const opts = {}
 
 if (process.env.MUTODE_CONCURRENCY) opts.concurrency = process.env.MUTODE_CONCURRENCY
 
-test.serial('Example module', async t => {
-  let mutode = new Mutode(opts)
-  await mutode.run()
-  t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
-  t.true(mutode.mutants >= MUTANTS)
-  t.true(mutode.killed >= KILLED)
-  t.true(mutode.survived >= SURVIVED)
-  t.true(mutode.discarded >= DISCARDED)
-  t.true(mutode.coverage > 90)
-  await t.throws(mutode.run())
-})
-
 test.serial('Exmaple module - killed', async t => {
   const testOpts = Object.assign({
     paths: 'src/killed.js'
@@ -36,6 +24,7 @@ test.serial('Exmaple module - killed', async t => {
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.mutants, mutode.killed)
   t.is(mutode.coverage, 100)
+  await t.throws(mutode.run())
 })
 
 test.serial('Exmaple module - survived', async t => {
@@ -47,6 +36,7 @@ test.serial('Exmaple module - survived', async t => {
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.mutants, mutode.survived)
   t.is(mutode.coverage, 0)
+  await t.throws(mutode.run())
 })
 
 test.serial('Exmaple module - discarded', async t => {
@@ -56,7 +46,8 @@ test.serial('Exmaple module - discarded', async t => {
   let mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
-  t.is(mutode.discarded, DISCARDED)
+  t.is(mutode.discarded, 1)
+  await t.throws(mutode.run())
 })
 
 test.serial('Exmaple module - no mutants', async t => {
