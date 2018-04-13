@@ -14,7 +14,7 @@ module.exports = async function removeFunctionsMutator ({mutodeInstance, filePat
   walk.simple(ast, {
     Function (node) {
       const line = node.loc.start.line
-      const functionName = node.id ? node.id.name : node.key ? node.key.name : '(assigned / anonymous)'
+      const functionName = node.id ? node.id.name : node.key ? node.key.name : '(anonymous / assigned)'
 
       const mutantId = ++mutodeInstance.mutants
       const log = `MUTANT ${mutantId}:\tRFM Lines ${node.loc.start.line}-${node.loc.end.line}: Commented function ${functionName}`
