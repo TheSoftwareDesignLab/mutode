@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>mutators/negateConditionalsMutator.js - Documentation</title>
+    <title>mutators/removeSwitchCasesMutator.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">mutators/negateConditionalsMutator.js</h1>
+    <h1 class="page-title">mutators/removeSwitchCasesMutator.js</h1>
     
 
     
@@ -40,53 +40,33 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
-const debug = require('debug')('mutode:negateConditionalsMutator')
+const debug = require('debug')('mutode:removeSwitchCasesMutator')
 
 const mutantRunner = require('../mutantRunner')
-const lineDiff = require('../util/lineDiff')
-
-const operators = [
-  ['==', '!='],
-  ['!=', '=='],
-  ['===', '!=='],
-  ['!==', '==='],
-  ['&lt;=', '>'],
-  ['>', '&lt;='],
-  ['>=', '&lt;'],
-  ['&lt;', '>=']
-]
 
 /**
- * @description Hola
- * @function negateConditionalsMutator
+ * @description Mutates switch statement by removing cases
+ * @function removeSwitchCasesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running negate conditionals mutator on %s', filePath)
+module.exports = async function removeSwitchCasesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running remove switch cases mutator on %s', filePath)
 
   walk.simple(ast, {
-    BinaryExpression (node) {
-      for (const pair of operators) {
-        if (node.operator !== pair[0]) {
-          continue
-        }
-        const line = node.loc.start.line
-        const lineContent = lines[line - 1]
+    SwitchCase (node) {
+      const line = node.loc.start.line
+      const caseContent = node.test ? node.test.extra ? node.test.extra.raw : `${node.test.value}` : 'default'
 
-        const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
-          lineContent.substr(node.loc.start.column, node.loc.end.column - node.loc.start.column).replace(pair[0], pair[1]) +
-          lineContent.substr(node.loc.end.column)
-
-        const mutantId = ++mutodeInstance.mutants
-        const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}`
-        debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tNCM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
-        const linesCopy = lines.slice()
-        linesCopy[line - 1] = mutantLineContent
-        const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      const mutantId = ++mutodeInstance.mutants
+      const log = `MUTANT ${mutantId}:\tRSCM Lines ${node.loc.start.line}-${node.loc.end.line}: Commented case ${caseContent}`
+      debug(log)
+      mutodeInstance.mutantLog(log)
+      const linesCopy = lines.slice()
+      for (let i = line - 1; i &lt; node.loc.end.line; i++) {
+        linesCopy[i] = `// ${linesCopy[i]}`
       }
+      const contentToWrite = linesCopy.join('\n')
+      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
     }
   })
 }

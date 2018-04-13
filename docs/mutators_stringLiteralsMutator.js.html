@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>mutators/negateConditionalsMutator.js - Documentation</title>
+    <title>mutators/stringLiteralsMutator.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,7 +29,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">mutators/negateConditionalsMutator.js</h1>
+    <h1 class="page-title">mutators/stringLiteralsMutator.js</h1>
     
 
     
@@ -40,55 +40,67 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>const walk = require('babylon-walk')
-const debug = require('debug')('mutode:negateConditionalsMutator')
+const debug = require('debug')('mutode:stringLiteralsMutator')
 
 const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
-const operators = [
-  ['==', '!='],
-  ['!=', '=='],
-  ['===', '!=='],
-  ['!==', '==='],
-  ['&lt;=', '>'],
-  ['>', '&lt;='],
-  ['>=', '&lt;'],
-  ['&lt;', '>=']
-]
-
 /**
- * @description Hola
- * @function negateConditionalsMutator
+ * @description Mutates string literals values.
+ * String are mutated to a random string and to an empty string. Empty string are mutated to a random string.
+ * @function stringLiteralsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
-  debug('Running negate conditionals mutator on %s', filePath)
+module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+  debug('Running string literals mutator on %s', filePath)
 
   walk.simple(ast, {
-    BinaryExpression (node) {
-      for (const pair of operators) {
-        if (node.operator !== pair[0]) {
-          continue
-        }
-        const line = node.loc.start.line
-        const lineContent = lines[line - 1]
+    StringLiteral (node) {
+      const line = node.loc.start.line
+      const lineContent = lines[line - 1]
 
+      if (node.value.length !== 0) {
         const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
-          lineContent.substr(node.loc.start.column, node.loc.end.column - node.loc.start.column).replace(pair[0], pair[1]) +
+          node.extra.raw.replace(node.value, '') +
           lineContent.substr(node.loc.end.column)
 
         const mutantId = ++mutodeInstance.mutants
         const diff = lineDiff(lineContent, mutantLineContent)
-        const log = `MUTANT ${mutantId}:\tNCM Line ${line}:\t${diff}`
+        const log = `MUTANT ${mutantId}:\tSLM Line ${line}:\t${diff}...`
         debug(log)
-        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tNCM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+        mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tSLM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
         queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
       }
+
+      const newValue = `'${randomString(node.value.length || 10)}'`
+      const mutantLineContent = lineContent.substr(0, node.loc.start.column) +
+        newValue +
+        lineContent.substr(node.loc.end.column)
+
+      const mutantId = ++mutodeInstance.mutants
+      const diff = lineDiff(lineContent, mutantLineContent)
+      const log = `MUTANT ${mutantId}:\tSLM Line ${line}:\t${diff}...`
+      debug(log)
+      mutodeInstance.mutantLog(`MUTANT ${mutantId}:\tSLM ${filePath} Line ${line}:\t\`${lineContent.trim()}\` > \`${mutantLineContent.trim()}'\``)
+      const linesCopy = lines.slice()
+      linesCopy[line - 1] = mutantLineContent
+      const contentToWrite = linesCopy.join('\n')
+      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
     }
   })
+}
+
+function randomString (length) {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz'
+  let randomstring = ''
+  for (let i = 0; i &lt; length; i++) {
+    const ind = Math.floor(Math.random() * chars.length)
+    randomstring += chars.charAt(ind)
+  }
+  return randomstring
 }
 </code></pre>
         </article>
