@@ -39,6 +39,7 @@ class Mutode {
     }
 
     this.id = `${Math.floor(Date.now() / 10000)}`
+    this.npmCommand = /^win/.test(process.platform) ? 'npm.cmd' : 'npm'
     this.mutators = mutators
     this.concurrency = concurrency
     this.mutants = 0
@@ -179,7 +180,7 @@ class Mutode {
   async timeCleanTests () {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
-    const child = spawn(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`), shell: true})
+    const child = spawn(this.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`), shell: true})
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
