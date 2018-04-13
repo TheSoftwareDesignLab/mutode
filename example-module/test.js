@@ -20,36 +20,32 @@ assert.strictEqual(killed.increments(10), 10)
 
 // Conditionals
 assert.strictEqual(killed.conditionals(-1), 0)
-assert.strictEqual(killed.conditionals(5), 5)
-assert.strictEqual(killed.conditionals(10), 20)
-assert.strictEqual(killed.conditionals(15), 30)
-assert.strictEqual(killed.conditionals(20), 40)
-assert.strictEqual(killed.conditionals(30), 90)
-assert.strictEqual(killed.conditionals(27), 108)
-assert.strictEqual(killed.conditionals(25), 125)
-assert.strictEqual(killed.conditionals(24), -1)
+assert.strictEqual(killed.conditionals(0), 0)
+assert.strictEqual(killed.conditionals(1), 1)
+assert.strictEqual(killed.conditionals(2), 4)
+assert.strictEqual(killed.conditionals(3), 6)
+assert.strictEqual(killed.conditionals(4), 20)
+assert.strictEqual(killed.conditionals(5), -1)
+assert.strictEqual(killed.conditionals(6), 24)
+assert.strictEqual(killed.conditionals(7), 21)
 
 // Invert negatives
 assert.strictEqual(killed.negatives(-1), 1)
 assert.strictEqual(killed.negatives(0), 0)
 assert.strictEqual(killed.negatives(1), -1)
 
-// Return values
-assert.strictEqual(killed.returnValues.numeric(), 7)
-assert.strictEqual(killed.returnValues.numericZero(), 0)
-assert.strictEqual(killed.returnValues.booleanTrue(), true)
-assert.strictEqual(killed.returnValues.booleanFalse(), false)
-assert.strictEqual(killed.returnValues.string(), 'hello')
-assert.strictEqual(killed.returnValues.emptyString(), '')
+// String literals
+assert.strictEqual(killed.stringLiterals.hello(), 'hello')
+assert.strictEqual(killed.stringLiterals.empty(), '')
 
-// Switch cases
-assert.strictEqual(killed.switchCases(0), 1)
-assert.strictEqual(killed.switchCases(1), 2)
-assert.strictEqual(killed.switchCases('a'), 3)
-assert.strictEqual(killed.switchCases(''), 4)
-assert.strictEqual(killed.switchCases(true), 5)
-assert.strictEqual(killed.switchCases(false), 6)
-assert.strictEqual(killed.switchCases(null), 10)
+// Numeric literals
+assert.strictEqual(killed.numericLiterals.zero(), 0)
+assert.strictEqual(killed.numericLiterals.one(), 1)
+assert.strictEqual(killed.numericLiterals.ten(), 10)
+
+// Boolean literals
+assert.strictEqual(killed.booleanLiterals.booleanTrue(), true)
+assert.strictEqual(killed.booleanLiterals.booleanFalse(), false)
 
 // Functions
 assert.strictEqual(killed.functions(), 12)
@@ -61,8 +57,13 @@ assert.deepEqual(killed.arrays(), [1, 2, 3, 4, 5, {a: 6, b: 7}])
 assert.deepEqual(killed.objects(true), {a: 1, b: 2})
 assert.deepEqual(killed.objects(false), {a: 3, b: [4, 5]})
 
+// Switch cases
+assert.deepEqual(killed.switchCases(1), 2)
+assert.deepEqual(killed.switchCases(true), 3)
+assert.deepEqual(killed.switchCases('hello'), 4)
+
 // Discarded
-assert.strictEqual(discarded, true)
+assert.deepEqual(discarded, {})
 
 // Survived
 assert.strictEqual(survived, undefined)

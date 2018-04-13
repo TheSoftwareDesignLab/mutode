@@ -1,4 +1,2 @@
-const to = setTimeout(() => { console.log('timeout') }, 6000)
+const to = setTimeout(() => {}, 6000)
 to.unref()
-
-module.exports = true

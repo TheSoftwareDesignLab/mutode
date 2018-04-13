@@ -25,19 +25,19 @@ module.exports = {
     if (a === -1) {
       return 0
     }
-    if (a < 10) {
+    if (a < 2) {
       return a
     }
-    if (a <= 20) {
+    if (a <= 3) {
       return a * 2
     }
-    if (a >= 30) {
+    if (a >= 7) {
       return a * 3
     }
-    if (a > 25) {
+    if (a > 5) {
       return a * 4
     }
-    if (a !== 25) {
+    if (a !== 4) {
       return -1
     }
     return a * 5
@@ -45,42 +45,31 @@ module.exports = {
   negatives (a) {
     return -a
   },
-  returnValues: {
-    numeric () {
-      return 7
+  stringLiterals: {
+    hello () {
+      return 'hello'
     },
-    numericZero () {
+    empty () {
+      return ''
+    }
+  },
+  numericLiterals: {
+    zero () {
       return 0
     },
+    one () {
+      return 1
+    },
+    ten () {
+      return 10
+    }
+  },
+  booleanLiterals: {
     booleanTrue () {
       return true
     },
     booleanFalse () {
       return false
-    },
-    string () {
-      return 'hello'
-    },
-    emptyString () {
-      return ''
-    }
-  },
-  switchCases (a) {
-    switch (a) {
-      case 0:
-        return 1
-      case 1:
-        return 2
-      case 'a':
-        return 3
-      case '':
-        return 4
-      case true:
-        return 5
-      case false:
-        return 6
-      default:
-        return 10
     }
   },
   functions () {
@@ -115,5 +104,15 @@ module.exports = {
       ]
     }
     return bool ? a : b
+  },
+  switchCases(a) {
+    switch (a) {
+      case 1:
+        return 2
+      case true:
+        return 3
+      default:
+        return 4
+    }
   }
 }
