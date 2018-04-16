@@ -2,7 +2,7 @@
 
 Mutation testing for Node.js and JavaScript. **Currently being built**
 
-![Travis](https://api.travis-ci.com/DiegoRBaquero/mutode.svg?token=RmCH18hHqxd9wdtEPyix) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![Build Status](https://travis-ci.org/TheSoftwareDesignLab/mutode.svg?branch=master)](https://travis-ci.org/TheSoftwareDesignLab/mutode) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
 **Requires Node 8+**
 
