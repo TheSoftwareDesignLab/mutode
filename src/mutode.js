@@ -76,6 +76,7 @@ class Mutode {
       await this.copyFirst()
       this.mutators = await Mutode.loadMutants(this.mutators)
       this.timeout = await this.timeCleanTests()
+      debug('Setting mutant runner timeout to %s seconds', this.timeout / 1000)
       this.copied = this.copy()
       await new Promise(resolve => {
         async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
@@ -115,7 +116,18 @@ class Mutode {
 
       const fileContent = (await readFile(filePath)).toString()
       const lines = fileContent.split('\n')
-      const ast = babylon.parse(fileContent)
+      let ast
+      try {
+        ast = babylon.parse(fileContent)
+      } catch (e) {
+        try {
+          ast = babylon.parse(fileContent, {sourceType: 'module'})
+        } catch (e) {
+          console.log(`Couldn't parse AST for file ${filePath}`)
+          debug(e)
+          throw e
+        }
+      }
       for (const mutator of this.mutators) {
         debug('Running mutator %s', mutator.name)
         await mutator({mutodeInstance: this, filePath, lines, queue, ast})
@@ -150,7 +162,11 @@ class Mutode {
    * @returns {function} - Function that runs when mutants execution is completed.
    */
   done (resolve) {
-    return () => {
+    return err => {
+      if (err) {
+        debug(err)
+        throw err
+      }
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +(this.killed / (this.mutants || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
@@ -182,11 +198,19 @@ class Mutode {
     const start = +new Date()
     const child = spawn(this.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`), shell: true})
 
+    child.stderr.on('data', data => {
+      debug(data.toString())
+    })
+
+    child.stdout.on('data', data => {
+      debug(data.toString())
+    })
+
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
         if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-        const timeout = Math.max(diff * 2, 5000)
+        const timeout = Math.max(Math.ceil(diff / 1000) * 2000, 5000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         resolve(timeout)
       })
