@@ -63,12 +63,19 @@ Usage: mutode [options] [paths]
 Options:
   --concurrency, -c  Concurrency of mutant runners         [number] [default: 4]
   --mutators, -m     Specific mutators to load (space separated)
-             [array] [choices: "conditionalsBoundary", "deletion", "increments",
-          "invertNegatives", "math", "negateConditionals", "removeConditionals",
-                                                  "returnValues", "switchCases"]
+      [array] [choices: "booleanLiterals", "conditionalsBoundary", "increments",
+             "invertNegatives", "math", "negateConditionals", "numericLiterals",
+              "removeArrayElements", "removeConditionals", "removeFuncCallArgs",
+         "removeFuncParams", "removeFunctions", "removeLines", "removeObjProps",
+                                          "removeSwitchCases", "stringLiterals"]
   -h, --help         Show help                                         [boolean]
   -v, --version      Show version number                               [boolean]
 ```
+
+## Docs
+
+- Current supported mutation operators are available [**here**](https://thesoftwaredesignlab.github.io/mutode/module-Mutators.html)
+- General documentation is available [**here**](https://thesoftwaredesignlab.github.io/mutode/)
 
 ## License
 MIT Copyright © Diego Rodríguez Baquero
