@@ -8,6 +8,7 @@ const globby = require('globby')
 const mkdirp = require('mkdirp')
 const os = require('os')
 const path = require('path')
+const prettyMs = require('pretty-ms')
 const copyDir = require('recursive-copy')
 const stripAnsi = require('strip-ansi')
 const {promisify} = require('util')
@@ -71,6 +72,8 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
+    console.log(`Mutode ${this.id} running`)
+    const startTime = process.hrtime()
     await this.delete()
     try {
       await this.copyFirst()
@@ -86,6 +89,9 @@ class Mutode {
       throw e
     } finally {
       await this.delete()
+      const endTime = process.hrtime(startTime)
+      const endTimeMS = endTime[0] * 1e3 + endTime[1] / 1e6
+      console.log(`Mutode ${this.id} finished. Took ${prettyMs(endTimeMS)}`)
       this.mutantsLogFile.end()
       this.logFile.end()
     }
@@ -283,6 +289,7 @@ class Mutode {
    */
   async delete () {
     const toDelete = await globby(`.mutode/*`, {dot: true, onlyDirectories: true})
+    if (toDelete.length === 0) return
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})
