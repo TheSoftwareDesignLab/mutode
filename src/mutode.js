@@ -81,8 +81,8 @@ class Mutode {
       this.timeout = await this.timeCleanTests()
       debug('Setting mutant runner timeout to %s seconds', this.timeout / 1000)
       this.copied = this.copy()
-      await new Promise(resolve => {
-        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
+      await new Promise((resolve, reject) => {
+        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve, reject))
       })
     } catch (e) {
       debug(e)
@@ -174,11 +174,11 @@ class Mutode {
    * @param resolve {function} - Promise resolve handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
-  done (resolve) {
+  done (resolve, reject) {
     return err => {
       if (err) {
         debug(err)
-        throw err
+        return reject(err)
       }
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +((this.mutants > 0 ? this.killed : 1) / ((this.mutants - this.discarded) || 1) * 100).toFixed(2)
