@@ -26,4 +26,7 @@ const Mutode = require('../src/mutode')
 
 const mutator = new Mutode({paths: argv._, concurrency: argv.concurrency, mutators: argv.mutators})
 
-mutator.run()
+mutator.run().catch(e => {
+  console.error(e.message)
+  process.exit(1)
+})
