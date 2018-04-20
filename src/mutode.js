@@ -99,6 +99,7 @@ class Mutode {
   fileProcessor () {
     return async filePath => {
       debug('Creating mutants for %s', filePath)
+      const before = this.mutants
 
       const queue = async.queue(async task => {
         const i = await this.freeWorker()
@@ -130,8 +131,13 @@ class Mutode {
       }
       for (const mutator of this.mutators) {
         debug('Running mutator %s', mutator.name)
+        const before = this.mutants
         await mutator({mutodeInstance: this, filePath, lines, queue, ast})
+        const generated = this.mutants - before
+        debug('Mutator %s generated %d mutants', mutator.name, generated)
       }
+      const generated = this.mutants - before
+      debug('%d mutants generated for %s', generated, filePath)
       await new Promise(resolve => {
         const resolveWhenDone = () => {
           for (let i = 0; i < this.concurrency; i++) {
@@ -168,7 +174,7 @@ class Mutode {
         throw err
       }
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
-      this.coverage = +(this.killed / (this.mutants || 1) * 100).toFixed(2)
+      this.coverage = +((this.mutants > 0 ? this.killed : 1) / ((this.mutants - this.discarded) || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
       console.log()
       setImmediate(resolve)
@@ -243,7 +249,7 @@ class Mutode {
    */
   async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.startsWith('.')})
+    await copyDir('./', `.mutode/mutode-${this.id}-0`, {dot: true, filter: p => !p.startsWith('.')})
     console.log('Done\n')
   }
 
@@ -257,7 +263,7 @@ class Mutode {
     console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i < this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.startsWith('.')})
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {dot: true, filter: p => !p.startsWith('.')})
     }
     console.log('Done\n')
   }
