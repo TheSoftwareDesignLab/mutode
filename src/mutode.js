@@ -92,6 +92,7 @@ class Mutode {
       const endTime = process.hrtime(startTime)
       const endTimeMS = endTime[0] * 1e3 + endTime[1] / 1e6
       console.log(`Mutode ${this.id} finished. Took ${prettyMs(endTimeMS)}`)
+      console.log()
       this.mutantsLogFile.end()
       this.logFile.end()
     }
@@ -182,7 +183,6 @@ class Mutode {
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
       this.coverage = +((this.mutants > 0 ? this.killed : 1) / ((this.mutants - this.discarded) || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
-      console.log()
       setImmediate(resolve)
     }
   }
@@ -220,9 +220,9 @@ class Mutode {
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
-        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
+        if (code !== 0) return reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-        const timeout = Math.max(Math.ceil(diff / 1000) * 2000, 5000)
+        const timeout = Math.max(Math.ceil(diff / 1000) * 2500, 5000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         resolve(timeout)
       })
