@@ -3,11 +3,6 @@ const del = require('del')
 
 const Mutode = require('../src/mutode')
 
-const MUTANTS = 120
-const KILLED = 110
-const SURVIVED = 5
-const DISCARDED = 1
-
 process.chdir('./example-module')
 del.sync('.mutode', {force: true})
 
@@ -50,6 +45,14 @@ test.serial('Exmaple module - discarded', async t => {
   await t.throws(mutode.run())
 })
 
+test.serial('Exmaple module - no AST', async t => {
+  let mutode = new Mutode({
+    paths: 'src/no-ast.js',
+    concurrency: 1
+  })
+  await t.throws(mutode.run())
+})
+
 test.serial('Exmaple module - no mutants', async t => {
   let mutode = new Mutode({
     paths: 'src/discarded.js',
@@ -59,4 +62,5 @@ test.serial('Exmaple module - no mutants', async t => {
   await mutode.run()
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.mutants, 0)
+  await t.throws(mutode.run())
 })
