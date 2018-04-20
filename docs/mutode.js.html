@@ -49,6 +49,7 @@ const globby = require('globby')
 const mkdirp = require('mkdirp')
 const os = require('os')
 const path = require('path')
+const prettyMs = require('pretty-ms')
 const copyDir = require('recursive-copy')
 const stripAnsi = require('strip-ansi')
 const {promisify} = require('util')
@@ -112,20 +113,27 @@ class Mutode {
    */
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
+    console.log(`Mutode ${this.id} running`)
+    const startTime = process.hrtime()
     await this.delete()
     try {
       await this.copyFirst()
       this.mutators = await Mutode.loadMutants(this.mutators)
       this.timeout = await this.timeCleanTests()
+      debug('Setting mutant runner timeout to %s seconds', this.timeout / 1000)
       this.copied = this.copy()
-      await new Promise(resolve => {
-        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve))
+      await new Promise((resolve, reject) => {
+        async.eachSeries(this.filePaths, this.fileProcessor(), this.done(resolve, reject))
       })
     } catch (e) {
       debug(e)
       throw e
     } finally {
       await this.delete()
+      const endTime = process.hrtime(startTime)
+      const endTimeMS = endTime[0] * 1e3 + endTime[1] / 1e6
+      console.log(`Mutode ${this.id} finished. Took ${prettyMs(endTimeMS)}`)
+      console.log()
       this.mutantsLogFile.end()
       this.logFile.end()
     }
@@ -139,6 +147,7 @@ class Mutode {
   fileProcessor () {
     return async filePath => {
       debug('Creating mutants for %s', filePath)
+      const before = this.mutants
 
       const queue = async.queue(async task => {
         const i = await this.freeWorker()
@@ -156,11 +165,27 @@ class Mutode {
 
       const fileContent = (await readFile(filePath)).toString()
       const lines = fileContent.split('\n')
-      const ast = babylon.parse(fileContent)
+      let ast
+      try {
+        ast = babylon.parse(fileContent)
+      } catch (e) {
+        try {
+          ast = babylon.parse(fileContent, {sourceType: 'module'})
+        } catch (e) {
+          console.log(`Couldn't parse AST for file ${filePath}`)
+          debug(e)
+          throw e
+        }
+      }
       for (const mutator of this.mutators) {
         debug('Running mutator %s', mutator.name)
+        const before = this.mutants
         await mutator({mutodeInstance: this, filePath, lines, queue, ast})
+        const generated = this.mutants - before
+        debug('Mutator %s generated %d mutants', mutator.name, generated)
       }
+      const generated = this.mutants - before
+      debug('%d mutants generated for %s', generated, filePath)
       await new Promise(resolve => {
         const resolveWhenDone = () => {
           for (let i = 0; i &lt; this.concurrency; i++) {
@@ -190,12 +215,15 @@ class Mutode {
    * @param resolve {function} - Promise resolve handler
    * @returns {function} - Function that runs when mutants execution is completed.
    */
-  done (resolve) {
-    return () => {
+  done (resolve, reject) {
+    return err => {
+      if (err) {
+        debug(err)
+        return reject(err)
+      }
       console.log(`Out of ${this.mutants} mutants, ${this.killed} were killed, ${this.survived} survived and ${this.discarded} were discarded`)
-      this.coverage = +(this.killed / (this.mutants || 1) * 100).toFixed(2)
+      this.coverage = +((this.mutants > 0 ? this.killed : 1) / ((this.mutants - this.discarded) || 1) * 100).toFixed(2)
       console.log(`Mutant coverage: ${this.coverage}%`)
-      console.log()
       setImmediate(resolve)
     }
   }
@@ -223,11 +251,19 @@ class Mutode {
     const start = +new Date()
     const child = spawn(this.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`), shell: true})
 
+    child.stderr.on('data', data => {
+      debug(data.toString())
+    })
+
+    child.stdout.on('data', data => {
+      debug(data.toString())
+    })
+
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
-        if (code !== 0) reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
+        if (code !== 0) return reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
-        const timeout = Math.max(diff * 2, 5000)
+        const timeout = Math.max(Math.ceil(diff / 1000) * 2500, 5000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
         resolve(timeout)
       })
@@ -260,7 +296,7 @@ class Mutode {
    */
   async copyFirst () {
     console.logSame(`Creating a copy of your module... `)
-    await copyDir('./', `.mutode/mutode-${this.id}-0`, {filter: p => !p.startsWith('.')})
+    await copyDir('./', `.mutode/mutode-${this.id}-0`, {dot: true, filter: p => !p.startsWith('.')})
     console.log('Done\n')
   }
 
@@ -274,7 +310,7 @@ class Mutode {
     console.logSame(`Creating ${this.concurrency - 1} extra copies of your module... `)
     for (let i = 1; i &lt; this.concurrency; i++) {
       console.logSame(`${i}.. `)
-      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {filter: p => !p.startsWith('.')})
+      await copyDir('./', `.mutode/mutode-${this.id}-${i}`, {dot: true, filter: p => !p.startsWith('.')})
     }
     console.log('Done\n')
   }
@@ -294,6 +330,7 @@ class Mutode {
    */
   async delete () {
     const toDelete = await globby(`.mutode/*`, {dot: true, onlyDirectories: true})
+    if (toDelete.length === 0) return
     console.logSame('Deleting copies...')
     for (const path of toDelete) {
       await del(path, {force: true})
@@ -319,7 +356,7 @@ module.exports = Mutode
 <br class="clear">
 
 <footer>
-    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Apr 13 2018 16:39:41 GMT-0500 (-05) using the Minami theme.
+    Generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Fri Apr 20 2018 14:48:59 GMT-0500 (-05) using the Minami theme.
 </footer>
 
 <script>prettyPrint();</script>
