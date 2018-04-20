@@ -30,3 +30,4 @@ typings/
 example-module/.mutode
 example-module/woot.js
 no-tests-module/.mutode
+.coveralls.yml

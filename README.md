@@ -1,6 +1,6 @@
 # Mutode [![npm](https://img.shields.io/npm/v/mutode.svg)]() [![npm](https://img.shields.io/npm/dm/mutode.svg)]() [![npm](https://img.shields.io/npm/l/mutode.svg)](LICENSE)
 
-[![Build Status](https://travis-ci.org/TheSoftwareDesignLab/mutode.svg?branch=master)](https://travis-ci.org/TheSoftwareDesignLab/mutode) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![Build Status](https://travis-ci.org/TheSoftwareDesignLab/mutode.svg?branch=master)](https://travis-ci.org/TheSoftwareDesignLab/mutode)  [![Coverage Status](https://coveralls.io/repos/github/TheSoftwareDesignLab/mutode/badge.svg?branch=master)](https://coveralls.io/github/TheSoftwareDesignLab/mutode?branch=master)
 
 Mutation testing for Node.js and JavaScript.
 

@@ -11,7 +11,7 @@
   },
   "scripts": {
     "jsdoc": "jsdoc -c .jsdoc.json",
-    "test": "standard src && nyc ava"
+    "test": "standard src && nyc ava && nyc report --reporter=text-lcov | coveralls"
   },
   "keywords": [
     "mutation",
@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "ava": "^0.25.0",
+    "coveralls": "^3.0.0",
     "minami": "^1.2.3",
     "nyc": "^11.6.0",
     "standard": "^11.0.1"
