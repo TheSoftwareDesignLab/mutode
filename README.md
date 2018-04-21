@@ -4,7 +4,7 @@
 
 Mutation testing for Node.js and JavaScript.
 
-**Mutode** generates mutants (small changes of code) and runs your tests. If the tests fail, it means the mutant was detected and **killed**; if your tests pass, if means the mutant **survived** and your tests can be improved.
+**Mutode** generates mutants (small changes of code) and runs your tests. If the tests fail, it means the mutant was detected and **killed**; if your tests pass, it means the mutant **survived** and your tests can be improved.
 
 Read the thesis proposal [here](https://docs.google.com/document/d/1V6U-ahLq6faCbtP0DtKukzdnsUC2ZBsL1LWEJvkqUiE/edit?usp=sharing)
 
