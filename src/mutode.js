@@ -208,7 +208,7 @@ class Mutode {
   async timeCleanTests () {
     console.log(`Verifying and timing your test suite`)
     const start = +new Date()
-    const child = spawn(this.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`), shell: true})
+    const child = spawn(this.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${this.id}-0`)})
 
     child.stderr.on('data', data => {
       debug(data.toString())

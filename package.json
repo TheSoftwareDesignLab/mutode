@@ -39,6 +39,7 @@
     "pretty-ms": "^3.1.0",
     "recursive-copy": "^2.0.9",
     "strip-ansi": "^4.0.0",
+    "terminate": "^2.1.0",
     "yargs": "^9.0.1"
   },
   "devDependencies": {

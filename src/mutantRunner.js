@@ -3,6 +3,7 @@ const spawn = require('child_process').spawn
 const Debug = require('debug')
 const fs = require('fs')
 const path = require('path')
+const terminate = require('terminate')
 
 /**
  * @module MutantRunner
@@ -16,19 +17,14 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
     await new Promise(resolve => {
       const startTime = process.hrtime()
       fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
-      const child = spawn(mutodeInstance.npmCommand, ['test'], {
-        cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`),
-        detached: true,
-        shell: true
-      })
+      const child = spawn(mutodeInstance.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
 
       child.stderr.on('data', data => {
         debug(data.toString())
       })
 
       const timeout = setTimeout(() => {
-        child.kill('SIGKILL')
-        process.kill(-child.pid)
+        terminate(child.pid)
       }, mutodeInstance.timeout).unref()
 
       child.on('exit', (code, signal) => {
