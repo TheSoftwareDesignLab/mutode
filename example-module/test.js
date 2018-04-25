@@ -31,7 +31,7 @@ assert.strictEqual(killed.conditionals(7), 21)
 
 // Invert negatives
 assert.strictEqual(killed.negatives(-1), 1)
-assert.strictEqual(killed.negatives(0), 0)
+assert.strictEqual(killed.negatives(0), -0)
 assert.strictEqual(killed.negatives(1), -1)
 
 // String literals
