@@ -23,8 +23,10 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
         debug(data.toString())
       })
 
+      let timedout = false
       const timeout = setTimeout(() => {
         terminate(child.pid)
+        timedout = true
       }, mutodeInstance.timeout).unref()
 
       child.on('exit', (code, signal) => {
@@ -35,7 +37,7 @@ module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrit
         if (code === 0) {
           console.log(`${log}\t${chalk.bgRed('survived')} ${timeDiff}`)
           mutodeInstance.survived++
-        } else if (signal) {
+        } else if (signal || timedout) {
           console.log(`${log}\t${chalk.bgBlue('discarded (timeout)')} ${timeDiff}`)
           mutodeInstance.discarded++
         } else {
