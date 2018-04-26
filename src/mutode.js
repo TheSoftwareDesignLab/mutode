@@ -73,8 +73,8 @@ class Mutode {
   async run () {
     if (this.mutants > 0) throw new Error('This instance has already been executed')
     console.log(`Mutode ${this.id} running`)
-    const startTime = process.hrtime()
     await this.delete()
+    const startTime = process.hrtime()
     try {
       await this.copyFirst()
       this.mutators = await Mutode.loadMutants(this.mutators)
