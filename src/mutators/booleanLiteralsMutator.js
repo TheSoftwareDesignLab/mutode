@@ -6,7 +6,7 @@ const lineDiff = require('../util/lineDiff')
 
 /**
  * @description Mutates boolean literals values.
- * Numeric literals are mutated to *value + 1*, *value - 1*, *random value*, and 0 if not previously 0.
+ * Boolean literals are mutated to their negative.
  * @function booleanLiteralsMutator
  * @memberOf module:Mutators
  */
