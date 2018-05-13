@@ -13,10 +13,26 @@ const lineDiff = require('../util/lineDiff')
 module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running string literals mutator on %s', filePath)
 
-  walk.simple(ast, {
-    StringLiteral (node) {
+  walk.ancestor(ast, {
+    StringLiteral (node, state, ancestors) {
       const line = node.loc.start.line
       const lineContent = lines[line - 1]
+
+      if (ancestors.length >= 2) {
+        const ancestor = ancestors[ancestors.length - 2]
+        if (ancestor.type && ancestor.type === 'CallExpression' && ancestor.callee) {
+          if (ancestor.callee.type === 'MemberExpression' && ancestor.callee.object.name === 'console') return
+          if (ancestor.callee.name) {
+            switch (ancestor.callee.name) {
+              case 'require':
+              case 'debug':
+                return
+              default:
+                break
+            }
+          }
+        }
+      }
 
       if (node.value.length !== 0) {
         const mutantLineContent = lineContent.substr(0, node.loc.start.column) +

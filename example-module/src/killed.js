@@ -1,3 +1,5 @@
+const string = require('./killed-dep')
+
 module.exports = {
   deletion () {
     return true
@@ -47,7 +49,7 @@ module.exports = {
   },
   stringLiterals: {
     hello () {
-      return 'hello'
+      return string
     },
     empty () {
       return ''

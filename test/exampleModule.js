@@ -12,7 +12,7 @@ if (process.env.MUTODE_CONCURRENCY) opts.concurrency = process.env.MUTODE_CONCUR
 
 test.serial('Exmaple module - killed', async t => {
   const testOpts = Object.assign({
-    paths: 'src/killed.js'
+    paths: ['src/killed.js', 'src/killed-dep.js']
   }, opts)
   let mutode = new Mutode(testOpts)
   await mutode.run()
