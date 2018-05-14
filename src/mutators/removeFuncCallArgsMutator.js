@@ -12,8 +12,24 @@ const lineDiff = require('../util/lineDiff')
 module.exports = async function removeFuncCallArgsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
   debug('Running remove function call arguments mutator on %s', filePath)
 
-  walk.simple(ast, {
-    CallExpression (functionNode) {
+  walk.ancestor(ast, {
+    CallExpression (functionNode, state, ancestors) {
+      if (ancestors.length >= 2) {
+        const ancestor = ancestors[ancestors.length - 2]
+        if (ancestor.type && ancestor.type === 'CallExpression' && ancestor.callee) {
+          if (ancestor.callee.type === 'MemberExpression' && ancestor.callee.object.name === 'console') return
+          if (ancestor.callee.name) {
+            switch (ancestor.callee.name) {
+              case 'require':
+              case 'debug':
+                return
+              default:
+                break
+            }
+          }
+        }
+      }
+
       for (const node of functionNode.arguments) {
         const line = node.loc.start.line
         const lineContent = lines[line - 1]
