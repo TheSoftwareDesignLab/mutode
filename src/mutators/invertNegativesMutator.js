@@ -5,7 +5,7 @@ const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
 /**
- * @description Mutates `-a` to `a`
+ * @description Mutates `-a` to `a`.
  * @function invertNegativesMutator
  * @memberOf module:Mutators
  */

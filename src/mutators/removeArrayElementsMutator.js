@@ -5,7 +5,7 @@ const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
 /**
- * @description Mutates array by removing elements
+ * @description Mutates array by removing single elements.
  * @function removeArrayElementsMutator
  * @memberOf module:Mutators
  */

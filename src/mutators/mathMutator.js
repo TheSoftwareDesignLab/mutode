@@ -19,7 +19,7 @@ const operators = [
 ]
 
 /**
- * @description Mutates math operators to their inverse. Exponential operator `**` is mutated to multiplication `*`
+ * @description Mutates math and bitwise operators to their inverse. The modulus operator `%` and the exponential operator `**` are mutated to multiplication `*`.
  * @function mathMutator
  * @memberOf module:Mutators
  */

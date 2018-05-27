@@ -5,7 +5,7 @@ const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
 /**
- * @description Mutates objects by removing properties
+ * @description Mutates objects by removing single properties
  * @function removeObjPropsMutator
  * @memberOf module:Mutators
  */

@@ -4,7 +4,7 @@ const debug = require('debug')('mutode:removeSwitchCasesMutator')
 const mutantRunner = require('../mutantRunner')
 
 /**
- * @description Mutates switch statement by removing cases
+ * @description Mutates switch statement by removing single cases
  * @function removeSwitchCasesMutator
  * @memberOf module:Mutators
  */

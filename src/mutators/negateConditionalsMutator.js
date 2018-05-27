@@ -16,7 +16,7 @@ const operators = [
 ]
 
 /**
- * @description Hola
+ * @description Mutates conditionals to their inverse.
  * @function negateConditionalsMutator
  * @memberOf module:Mutators
  */

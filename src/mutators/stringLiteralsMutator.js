@@ -6,7 +6,7 @@ const lineDiff = require('../util/lineDiff')
 
 /**
  * @description Mutates string literals values.
- * String are mutated to a random string and to an empty string. Empty string are mutated to a random string.
+ * Strings are mutated to a random string, and to an empty string (if not previously empty).
  * @function stringLiteralsMutator
  * @memberOf module:Mutators
  */

@@ -5,7 +5,7 @@ const mutantRunner = require('../mutantRunner')
 const lineDiff = require('../util/lineDiff')
 
 /**
- * @description Mutates function calls removing arguments
+ * @description Mutates function calls removing single arguments.
  * @function removeFuncCallArgsMutator
  * @memberOf module:Mutators
  */
