@@ -53,5 +53,13 @@
     "include": [
       "src"
     ]
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/TheSoftwareDesignLab/mutode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TheSoftwareDesignLab/mutode/issues"
+  },
+  "homepage": "https://github.com/TheSoftwareDesignLab/mutode"
 }
