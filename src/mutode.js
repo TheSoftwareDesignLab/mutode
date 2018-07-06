@@ -220,7 +220,7 @@ class Mutode {
 
     return new Promise((resolve, reject) => {
       child.on('exit', code => {
-        if (code !== 0) return reject(new Error('Test suite most exit with code 0 with no mutants for Mutode to continue'))
+        if (code !== 0) return reject(new Error('Test suite must exit with code 0 with no mutants for Mutode to continue'))
         const diff = +new Date() - start
         const timeout = Math.max(Math.ceil(diff / 1000) * 2500, 5000)
         console.log(`Took ${(diff / 1000).toFixed(2)} seconds to run full test suite\n`)
