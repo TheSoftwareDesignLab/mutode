@@ -7,17 +7,22 @@ Mutation testing for Node.js and JavaScript.
 
 **Mutode** generates mutants (small changes of code) and runs your tests. If the tests fail, it means the mutant was detected and **killed**; if your tests pass, it means the mutant **survived** and your tests can be improved.
 
-Read the thesis proposal [**here**](https://docs.google.com/document/d/1V6U-ahLq6faCbtP0DtKukzdnsUC2ZBsL1LWEJvkqUiE/edit?usp=sharing)
-
 [**Watch the demo video**](https://www.youtube.com/watch?v=DILzHOljFj0&feature=youtu.be)
 
 > "It's like a test for your tests!" - @mappum
 
 > "Higher order testing: automated testing for your unit tests" - @albertomiranda
 
-**Requires Node 8+**
+## Publications
+
+Read the tool demo paper [*"Mutode: generic JavaScript and Node.js mutation testing tool"*](https://dl.acm.org/citation.cfm?id=3229504). In Proceedings of the 27th ACM SIGSOFT International Symposium on Software Testing and Analysis (ISSTA 2018)
+
+Read the thesis proposal [**here**](https://docs.google.com/document/d/1V6U-ahLq6faCbtP0DtKukzdnsUC2ZBsL1LWEJvkqUiE/edit?usp=sharing)
+
 
 ## Install
+
+**Requires Node 8+**
 
 Globally:
 
