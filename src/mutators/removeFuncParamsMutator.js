@@ -9,7 +9,7 @@ const lineDiff = require('../util/lineDiff')
  * @function removeFuncDeclarationParamsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function removeFuncDeclarationParamsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeFuncDeclarationParamsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running remove function declaration parameters mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -36,7 +36,7 @@ module.exports = async function removeFuncDeclarationParamsMutator ({mutodeInsta
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

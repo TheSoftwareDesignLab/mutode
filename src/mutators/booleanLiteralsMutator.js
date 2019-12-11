@@ -10,7 +10,7 @@ const lineDiff = require('../util/lineDiff')
  * @function booleanLiteralsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function booleanLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function booleanLiteralsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running boolean literals mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -30,7 +30,7 @@ module.exports = async function booleanLiteralsMutator ({mutodeInstance, filePat
       const linesCopy = lines.slice()
       linesCopy[line - 1] = mutantLineContent
       const contentToWrite = linesCopy.join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
     }
   })
 }

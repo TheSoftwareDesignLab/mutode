@@ -1,5 +1,5 @@
 function other (a = 0) {
-  for (let i = 0; false; ) {
+  for (let i = 0; false;) {
   }
   console.log('')
   a++

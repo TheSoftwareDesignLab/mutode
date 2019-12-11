@@ -10,7 +10,7 @@ const lineDiff = require('../util/lineDiff')
  * @function stringLiteralsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function stringLiteralsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running string literals mutator on %s', filePath)
 
   walk.ancestor(ast, {
@@ -47,7 +47,7 @@ module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
 
       const newValue = `'${randomString(node.value.length || 10)}'`
@@ -63,7 +63,7 @@ module.exports = async function stringLiteralsMutator ({mutodeInstance, filePath
       const linesCopy = lines.slice()
       linesCopy[line - 1] = mutantLineContent
       const contentToWrite = linesCopy.join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
     }
   })
 }

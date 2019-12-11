@@ -9,7 +9,7 @@ const mutantRunner = require('../mutantRunner')
  * @function removeLinesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function removeLinesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeLinesMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running remove lines mutator on %s', filePath)
 
   const linesCheck = {}
@@ -49,7 +49,7 @@ module.exports = async function removeLinesMutator ({mutodeInstance, filePath, l
       const linesCopy = lines.slice()
       linesCopy[line - 1] = `// ${lineContent}`
       const contentToWrite = linesCopy.join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
     }
   })
 }

@@ -4,9 +4,9 @@ const del = require('del')
 const Mutode = require('../src/mutode')
 
 process.chdir('./no-tests-module')
-del.sync('.mutode', {force: true})
+del.sync('.mutode', { force: true })
 
 test.serial('No tests module', async t => {
-  let mutode = new Mutode()
+  const mutode = new Mutode()
   await t.throws(mutode.run())
 })

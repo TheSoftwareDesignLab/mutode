@@ -3,7 +3,7 @@ const test = require('ava')
 const Mutode = require('../src/mutode')
 
 test('New instance - Correct', async t => {
-  let mutode = new Mutode()
+  const mutode = new Mutode()
   t.is(mutode.mutants, 0)
   t.is(mutode.killed, 0)
   t.is(mutode.survived, 0)
@@ -13,7 +13,7 @@ test('New instance - Correct', async t => {
 
 test('New instance - Empty paths', async t => {
   t.throws(() => {
-    const mutodeFail = new Mutode({paths: 'hello.js'})
+    const mutodeFail = new Mutode({ paths: 'hello.js' })
     mutodeFail.run()
   })
 })

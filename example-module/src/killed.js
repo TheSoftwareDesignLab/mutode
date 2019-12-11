@@ -5,17 +5,17 @@ module.exports = {
     return true
   },
   math (n, m) {
-    let a = n + m
-    let b = n - m
-    let c = n * m
-    let d = n / m
-    let e = n % m
-    let f = n | m
-    let g = n & m
-    let h = n ^ m
-    let i = n ** m
-    let j = n << m
-    let k = n >> m
+    const a = n + m
+    const b = n - m
+    const c = n * m
+    const d = n / m
+    const e = n % m
+    const f = n | m
+    const g = n & m
+    const h = n ^ m
+    const i = n ** m
+    const j = n << m
+    const k = n >> m
     return +(a + b + c + d + e + f + g + h + i + j + k).toFixed(1)
   },
   increments (a) {
@@ -86,7 +86,7 @@ module.exports = {
     return a(1, 2, 3) * b()
   },
   arrays () {
-    const a = [1,2,3]
+    const a = [1, 2, 3]
     const b = [
       4,
       5,
@@ -98,7 +98,7 @@ module.exports = {
     return a.concat(b)
   },
   objects (bool) {
-    const a = { a: 1, b: 2}
+    const a = { a: 1, b: 2 }
     const b = {
       a: 3,
       b: [
@@ -107,7 +107,7 @@ module.exports = {
     }
     return bool ? a : b
   },
-  switchCases(a) {
+  switchCases (a) {
     switch (a) {
       case 1:
         return 2

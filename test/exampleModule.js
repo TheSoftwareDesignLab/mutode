@@ -4,7 +4,7 @@ const del = require('del')
 const Mutode = require('../src/mutode')
 
 process.chdir('./example-module')
-del.sync('.mutode', {force: true})
+del.sync('.mutode', { force: true })
 
 const opts = {}
 
@@ -14,7 +14,7 @@ test.serial('Exmaple module - killed', async t => {
   const testOpts = Object.assign({
     paths: ['src/killed.js', 'src/killed-dep.js']
   }, opts)
-  let mutode = new Mutode(testOpts)
+  const mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.mutants, mutode.killed)
@@ -26,7 +26,7 @@ test.serial('Exmaple module - survived', async t => {
   const testOpts = Object.assign({
     paths: 'src/survived.js'
   }, opts)
-  let mutode = new Mutode(testOpts)
+  const mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.mutants, mutode.survived)
@@ -38,7 +38,7 @@ test.serial('Exmaple module - discarded', async t => {
   const testOpts = Object.assign({
     paths: 'src/discarded.js'
   }, opts)
-  let mutode = new Mutode(testOpts)
+  const mutode = new Mutode(testOpts)
   await mutode.run()
   t.is(mutode.killed + mutode.survived + mutode.discarded, mutode.mutants)
   t.is(mutode.discarded, 1)
@@ -46,7 +46,7 @@ test.serial('Exmaple module - discarded', async t => {
 })
 
 test.serial('Exmaple module - no AST', async t => {
-  let mutode = new Mutode({
+  const mutode = new Mutode({
     paths: 'src/no-ast.js',
     concurrency: 1
   })
@@ -54,7 +54,7 @@ test.serial('Exmaple module - no AST', async t => {
 })
 
 test.serial('Exmaple module - no mutants', async t => {
-  let mutode = new Mutode({
+  const mutode = new Mutode({
     paths: 'src/discarded.js',
     mutators: 'invertNegatives',
     concurrency: 1

@@ -20,7 +20,7 @@ const operators = [
  * @function negateConditionalsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function negateConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function negateConditionalsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running negate conditionals mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -44,7 +44,7 @@ module.exports = async function negateConditionalsMutator ({mutodeInstance, file
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

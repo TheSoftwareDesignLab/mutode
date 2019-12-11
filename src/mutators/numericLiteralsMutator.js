@@ -10,7 +10,7 @@ const lineDiff = require('../util/lineDiff')
  * @function numericLiteralsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function numericLiteralsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function numericLiteralsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running numeric literals mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -38,7 +38,7 @@ module.exports = async function numericLiteralsMutator ({mutodeInstance, filePat
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

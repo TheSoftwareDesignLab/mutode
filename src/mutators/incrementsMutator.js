@@ -14,7 +14,7 @@ const operators = [
  * @function incrementsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function incrementsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function incrementsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running increments mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -38,7 +38,7 @@ module.exports = async function incrementsMutator ({mutodeInstance, filePath, li
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

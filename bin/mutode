@@ -15,7 +15,7 @@ const argv = require('yargs')
     alias: 'm',
     describe: 'Specific mutators to load (space separated)',
     type: 'array',
-    choices: globby.sync('../src/mutators/*', {cwd: __dirname}).map(f => f.split('/').pop().replace('Mutator.js', ''))
+    choices: globby.sync('../src/mutators/*', { cwd: __dirname }).map(f => f.split('/').pop().replace('Mutator.js', ''))
   })
   .help('h')
   .alias('h', 'help')
@@ -24,7 +24,7 @@ const argv = require('yargs')
 
 const Mutode = require('../src/mutode')
 
-const mutator = new Mutode({paths: argv._, concurrency: argv.concurrency, mutators: argv.mutators})
+const mutator = new Mutode({ paths: argv._, concurrency: argv.concurrency, mutators: argv.mutators })
 
 mutator.run().catch(e => {
   console.error(e.message)

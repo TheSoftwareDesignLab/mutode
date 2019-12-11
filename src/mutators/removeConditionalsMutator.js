@@ -16,7 +16,7 @@ const operators = [
  * @function removeConditionalsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function removeConditionalsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeConditionalsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running remove conditionals mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -41,7 +41,7 @@ module.exports = async function removeConditionalsMutator ({mutodeInstance, file
           const linesCopy = lines.slice()
           linesCopy[line - 1] = mutantLineContent
           const contentToWrite = linesCopy.join('\n')
-          queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+          queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
         }
       }
     }

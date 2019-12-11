@@ -16,7 +16,7 @@ const operators = [
  * @function conditionalsBoundaryMutator
  * @memberOf module:Mutators
  */
-module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function conditionalsBoundaryMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running conditionals boundary mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -40,7 +40,7 @@ module.exports = async function conditionalsBoundaryMutator ({mutodeInstance, fi
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

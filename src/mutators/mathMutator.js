@@ -23,7 +23,7 @@ const operators = [
  * @function mathMutator
  * @memberOf module:Mutators
  */
-module.exports = async function mathMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function mathMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running math mutator on %s', filePath)
   walk.simple(ast, {
     BinaryExpression (node) {
@@ -46,7 +46,7 @@ module.exports = async function mathMutator ({mutodeInstance, filePath, lines, q
         const linesCopy = lines.slice()
         linesCopy[line - 1] = mutantLineContent
         const contentToWrite = linesCopy.join('\n')
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })

@@ -51,19 +51,19 @@ assert.strictEqual(killed.booleanLiterals.booleanFalse(), false)
 assert.strictEqual(killed.functions(), 12)
 
 // Arrays
-assert.deepEqual(killed.arrays(), [1, 2, 3, 4, 5, {a: 6, b: 7}])
+assert.deepStrictEqual(killed.arrays(), [1, 2, 3, 4, 5, { a: 6, b: 7 }])
 
 // Objects
-assert.deepEqual(killed.objects(true), {a: 1, b: 2})
-assert.deepEqual(killed.objects(false), {a: 3, b: [4, 5]})
+assert.deepStrictEqual(killed.objects(true), { a: 1, b: 2 })
+assert.deepStrictEqual(killed.objects(false), { a: 3, b: [4, 5] })
 
 // Switch cases
-assert.deepEqual(killed.switchCases(1), 2)
-assert.deepEqual(killed.switchCases(true), 3)
-assert.deepEqual(killed.switchCases('hello'), 4)
+assert.deepStrictEqual(killed.switchCases(1), 2)
+assert.deepStrictEqual(killed.switchCases(true), 3)
+assert.deepStrictEqual(killed.switchCases('hello'), 4)
 
 // Discarded
-assert.deepEqual(discarded, {})
+assert.deepStrictEqual(discarded, {})
 
 // Survived
 assert.strictEqual(survived, undefined)

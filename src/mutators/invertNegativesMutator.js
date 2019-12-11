@@ -9,7 +9,7 @@ const lineDiff = require('../util/lineDiff')
  * @function invertNegativesMutator
  * @memberOf module:Mutators
  */
-module.exports = async function invertNegativesMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function invertNegativesMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running invert negatives mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -31,7 +31,7 @@ module.exports = async function invertNegativesMutator ({mutodeInstance, filePat
       const linesCopy = lines.slice()
       linesCopy[line - 1] = mutantLineContent
       const contentToWrite = linesCopy.join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
     }
   })
 }

@@ -11,13 +11,13 @@ const terminate = require('terminate')
  *
  * Execution is done with the `npm test` command inside the worker's directory
  */
-module.exports = function MutantRunner ({mutodeInstance, filePath, contentToWrite, log}) {
+module.exports = function MutantRunner ({ mutodeInstance, filePath, contentToWrite, log }) {
   const debug = Debug(`mutants:${filePath}`)
   return async index => {
     await new Promise(resolve => {
       const startTime = process.hrtime()
       fs.writeFileSync(`.mutode/mutode-${mutodeInstance.id}-${index}/${filePath}`, contentToWrite)
-      const child = spawn(mutodeInstance.npmCommand, ['test'], {cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`)})
+      const child = spawn(mutodeInstance.npmCommand, ['test'], { cwd: path.resolve(`.mutode/mutode-${mutodeInstance.id}-${index}`) })
 
       child.stderr.on('data', data => {
         debug(data.toString())

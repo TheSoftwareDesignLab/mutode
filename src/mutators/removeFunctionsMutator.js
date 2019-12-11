@@ -8,7 +8,7 @@ const mutantRunner = require('../mutantRunner')
  * @function removeFunctionsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function removeFunctionsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeFunctionsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running remove functions mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -25,7 +25,7 @@ module.exports = async function removeFunctionsMutator ({mutodeInstance, filePat
         linesCopy[i] = `// ${linesCopy[i]}`
       }
       const contentToWrite = linesCopy.join('\n')
-      queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+      queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
     }
   })
 }

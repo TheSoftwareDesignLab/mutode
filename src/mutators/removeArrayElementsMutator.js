@@ -9,7 +9,7 @@ const lineDiff = require('../util/lineDiff')
  * @function removeArrayElementsMutator
  * @memberOf module:Mutators
  */
-module.exports = async function removeArrayElementsMutator ({mutodeInstance, filePath, lines, queue, ast}) {
+module.exports = async function removeArrayElementsMutator ({ mutodeInstance, filePath, lines, queue, ast }) {
   debug('Running remove array elements mutator on %s', filePath)
 
   walk.simple(ast, {
@@ -52,7 +52,7 @@ module.exports = async function removeArrayElementsMutator ({mutodeInstance, fil
           linesCopy[line - 1] = mutantLineContent
           contentToWrite = linesCopy.join('\n')
         }
-        queue.push(mutantRunner({mutodeInstance, filePath, contentToWrite, log}))
+        queue.push(mutantRunner({ mutodeInstance, filePath, contentToWrite, log }))
       }
     }
   })
