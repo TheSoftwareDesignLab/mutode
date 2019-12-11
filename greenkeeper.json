@@ -2,8 +2,6 @@
   "groups": {
     "default": {
       "packages": [
-        "example-module/package.json",
-        "no-tests-module/package.json",
         "package.json"
       ]
     }
